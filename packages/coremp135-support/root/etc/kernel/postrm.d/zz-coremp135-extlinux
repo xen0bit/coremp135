@@ -1,0 +1,3 @@
+#!/bin/sh
+# Called by the kernel package after removing a kernel.
+exec /usr/sbin/update-extlinux

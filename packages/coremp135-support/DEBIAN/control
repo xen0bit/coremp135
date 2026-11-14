@@ -1,0 +1,11 @@
+Package: coremp135-support
+Version: @VERSION@
+Architecture: all
+Maintainer: coremp135 build <noreply@example.invalid>
+Depends: linux-image-coremp135, cloud-guest-utils, e2fsprogs, gdisk
+Section: admin
+Priority: optional
+Description: Board support for the M5Stack CoreMP135
+ extlinux.conf generation on kernel install/removal (U-Boot boot menu),
+ LCD panel init firmware, first-boot root filesystem growth, USB gadget
+ serial console and the project apt repository configuration.

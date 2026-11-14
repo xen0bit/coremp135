@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+if [ "$1" = configure ]; then
+	systemctl --no-reload preset coremp135-firstboot.service serial-getty@ttyGS0.service >/dev/null 2>&1 || true
+	/usr/sbin/update-extlinux || true
+fi

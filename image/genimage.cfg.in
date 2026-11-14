@@ -1,0 +1,47 @@
+# SD card layout (GPT), same partition names as ST/M5Stack images:
+# the ROM code loads TF-A from "fsbl1"/"fsbl2", TF-A loads "fip",
+# U-Boot keeps its environment in "u-boot-env" and boots extlinux from
+# the legacy-bootable "rootfs" partition.
+
+image rootfs.ext4 {
+	ext4 {
+		label = "rootfs"
+		use-mke2fs = true
+		features = "^metadata_csum_seed"
+	}
+	size = @ROOTFS_SIZE@
+	mountpoint = "/"
+}
+
+image sdcard.img {
+	hdimage {
+		partition-table-type = "gpt"
+	}
+
+	partition fsbl1 {
+		image = "tf-a-stm32mp135f-coremp135.stm32"
+		offset = 17K
+		size = 256K
+	}
+
+	partition fsbl2 {
+		image = "tf-a-stm32mp135f-coremp135.stm32"
+		size = 256K
+	}
+
+	partition fip {
+		image = "fip.bin"
+		size = 4M
+	}
+
+	partition u-boot-env {
+		size = 512K
+	}
+
+	partition rootfs {
+		image = "rootfs.ext4"
+		offset = 8M
+		bootable = true
+		partition-type-uuid = "L"
+	}
+}

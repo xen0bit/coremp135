@@ -1,0 +1,2 @@
+# Copy to 99-local.config (git-ignored) for personal tweaks, e.g.:
+# CONFIG_USB_SERIAL_KEYSPAN=m

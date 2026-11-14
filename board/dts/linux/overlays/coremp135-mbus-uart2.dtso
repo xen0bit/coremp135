@@ -1,0 +1,8 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/* Enable USART2 on the M5-Bus as /dev/ttySTM2 */
+/dts-v1/;
+/plugin/;
+
+&usart2 {
+	status = "okay";
+};

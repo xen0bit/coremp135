@@ -1,0 +1,9 @@
+#!/bin/sh
+# Grow the rootfs partition and filesystem to fill the SD card (first boot).
+set -eu
+root=$(findmnt -no SOURCE /)
+disk=/dev/$(lsblk -no PKNAME "$root")
+part=$(cat "/sys/class/block/$(basename "$root")/partition")
+sgdisk -e "$disk" >/dev/null 2>&1 || true	# move backup GPT to the real end of the disk
+growpart "$disk" "$part" || [ $? -eq 1 ]	# exit code 1 = already maximal
+resize2fs "$root"

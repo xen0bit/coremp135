@@ -1,0 +1,84 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write   # releases + gh-pages apt repo
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Devices built by CI update from this repo's GitHub Pages apt repository.
+  APT_REPO_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+  # Armored private key (gpg --export-secret-keys --armor). Without it, a
+  # throwaway key is generated and published repos cannot be updated safely.
+  APT_SIGNING_KEY: ${{ secrets.APT_SIGNING_KEY }}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # package versions use the commit count
+
+      - name: Free disk space
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+
+      - name: Firmware (TF-A, OP-TEE, U-Boot)
+        run: make firmware
+
+      - name: Kernel
+        run: make kernel
+
+      - name: Packages
+        run: make packages
+
+      - name: Root filesystem and SD image
+        run: make image
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coremp135-image
+          path: |
+            build/out/*.img.xz
+            build/out/firmware/
+          compression-level: 0
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coremp135-debs
+          path: build/out/debs/*.deb
+
+      - name: Fetch current apt repository (gh-pages)
+        if: github.event_name != 'pull_request' && env.APT_SIGNING_KEY != ''
+        run: |
+          git fetch origin gh-pages:gh-pages 2>/dev/null && git worktree add build/repo gh-pages || mkdir -p build/repo
+
+      - name: Publish apt repository
+        if: github.event_name != 'pull_request' && env.APT_SIGNING_KEY != ''
+        env:
+          REPO_DIR: /work/build/repo
+        run: |
+          scripts/docker-run.sh scripts/publish-repo.sh
+          cd build/repo
+          git init -q 2>/dev/null || true
+          git checkout -q -B gh-pages
+          git add -A
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com \
+              commit -q -m "apt repo: ${GITHUB_SHA::8}" || exit 0
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" gh-pages
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/out/*.img.xz
