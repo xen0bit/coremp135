@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write   # releases + gh-pages apt repo
+  contents: write   # releases + gh-pages branch (apt repo state)
 
 concurrency:
   group: build-${{ github.ref }}
@@ -59,12 +59,12 @@ jobs:
           path: build/out/debs/*.deb
 
       - name: Fetch current apt repository (gh-pages)
-        if: github.event_name != 'pull_request' && env.APT_SIGNING_KEY != ''
+        if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) && env.APT_SIGNING_KEY != ''
         run: |
           git fetch origin gh-pages:gh-pages 2>/dev/null && git worktree add build/repo gh-pages || mkdir -p build/repo
 
       - name: Publish apt repository
-        if: github.event_name != 'pull_request' && env.APT_SIGNING_KEY != ''
+        if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) && env.APT_SIGNING_KEY != ''
         env:
           REPO_DIR: /work/build/repo
         run: |
@@ -77,8 +77,30 @@ jobs:
               commit -q -m "apt repo: ${GITHUB_SHA::8}" || exit 0
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" gh-pages
 
+      - name: Upload apt repository for GitHub Pages
+        if: (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) && env.APT_SIGNING_KEY != ''
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/repo
+
       - name: Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: build/out/*.img.xz
+
+  # The gh-pages branch stores the reprepro state between runs; the site
+  # itself is deployed from the uploaded artifact (Pages source: GitHub Actions).
+  pages:
+    needs: build
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

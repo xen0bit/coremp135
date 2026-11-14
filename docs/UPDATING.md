@@ -91,7 +91,9 @@ patches and DTs may need small adjustments.
    gpg --export-secret-keys --armor "CoreMP135 apt" | gh secret set APT_SIGNING_KEY
    ```
 
-2. Enable GitHub Pages for the `gh-pages` branch.
+2. In **Settings → Pages**, set *Source* to **GitHub Actions**. CI keeps the
+   repository state (reprepro database and pool) in the `gh-pages` branch and
+   deploys it to Pages from the workflow.
 3. Push to `main`. CI builds everything, uploads the image as an artifact
    and publishes the apt repository. Tag `vX.Y` to attach the image to a
    GitHub release.
