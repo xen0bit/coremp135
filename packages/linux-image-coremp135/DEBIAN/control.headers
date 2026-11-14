@@ -1,0 +1,10 @@
+Package: linux-headers-coremp135
+Version: @VERSION@
+Architecture: armhf
+Maintainer: coremp135 build <noreply@example.invalid>
+Depends: linux-headers-@KREL@ (= @KPKGVER@)
+Section: kernel
+Priority: optional
+Description: Linux kernel headers for the M5Stack CoreMP135 (latest)
+ Metapackage for building out-of-tree modules (e.g. DKMS) against the
+ newest CoreMP135 kernel.

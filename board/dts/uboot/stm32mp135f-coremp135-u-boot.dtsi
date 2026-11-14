@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR BSD-3-Clause
+/*
+ * U-Boot additions for the M5Stack CoreMP135. Copied to arch/arm/dts/ and
+ * picked up automatically for DEVICE_TREE=st/stm32mp135f-coremp135.
+ */
+
+#include "stm32mp13-u-boot.dtsi"
+
+/ {
+	config {
+		u-boot,mmc-env-partition = "u-boot-env";
+	};
+};
+
+&usart6 {
+	bootph-all;
+	/delete-property/rx-tx-swap;
+};
+
+&usart6_pins_coremp135 {
+	bootph-all;
+	pins1 {
+		bootph-all;
+	};
+	pins2 {
+		bootph-all;
+	};
+};
+
+&usbotg_hs {
+	u-boot,force-b-session-valid;
+};

@@ -1,0 +1,16 @@
+[Unit]
+Description=CoreMP135 first boot: grow rootfs, regenerate SSH host keys
+ConditionPathExists=!/var/lib/coremp135/firstboot-done
+After=local-fs.target
+Before=ssh.service sshd.service
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/coremp135-grow-rootfs
+ExecStart=/bin/sh -c 'rm -f /etc/ssh/ssh_host_*; ssh-keygen -A'
+ExecStart=/bin/sh -c 'mkdir -p /var/lib/coremp135 && touch /var/lib/coremp135/firstboot-done'
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,4 @@
+build/
+*.img
+*.img.xz
+kernel/config/fragments/99-local.config

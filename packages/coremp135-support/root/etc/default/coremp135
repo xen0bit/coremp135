@@ -1,0 +1,12 @@
+# M5Stack CoreMP135 boot configuration.
+# Run `update-extlinux` (or reinstall a kernel) after editing.
+
+# Kernel command line (root is found by GPT partition label).
+CMDLINE="root=PARTLABEL=rootfs rootfstype=ext4 rootwait rw console=ttySTM0,115200 console=tty1 panic=10"
+
+# Device tree overlays to apply, space separated, without .dtbo
+# Available: coremp135-mbus-uart2 coremp135-mbus-spidev coremp135-usb-c-host
+OVERLAYS=""
+
+# Number of kernels to keep in the boot menu (newest first; the 2nd is the fallback)
+MAX_KERNELS=3

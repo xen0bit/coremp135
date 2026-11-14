@@ -1,0 +1,3 @@
+#!/bin/sh
+# Called by the kernel package after installing a kernel.
+exec /usr/sbin/update-extlinux

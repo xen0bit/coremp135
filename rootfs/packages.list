@@ -1,0 +1,60 @@
+# Debian packages installed into the image (one per line, comments allowed).
+# Add WiFi/BT firmware or tools here; they update with `apt upgrade`.
+
+# base system
+systemd-sysv
+systemd-timesyncd
+udev
+dbus
+kmod
+sudo
+locales
+tzdata
+less
+nano
+vim-tiny
+bash-completion
+htop
+curl
+ca-certificates
+xz-utils
+zstd
+
+# storage / boot
+e2fsprogs
+dosfstools
+fdisk
+gdisk
+cloud-guest-utils
+
+# networking
+iproute2
+iputils-ping
+ethtool
+network-manager
+wpasupplicant
+openssh-server
+avahi-daemon
+libnss-mdns
+nftables
+wireless-regdb
+rfkill
+
+# board I/O tools
+i2c-tools
+can-utils
+gpiod
+alsa-utils
+evtest
+usbutils
+bluez
+
+# WiFi/Bluetooth firmware for common USB dongles (non-free-firmware)
+firmware-realtek
+firmware-misc-nonfree
+firmware-mediatek
+firmware-atheros
+firmware-brcm80211
+
+# runtime for the HDMI bridge blob
+libstdc++6

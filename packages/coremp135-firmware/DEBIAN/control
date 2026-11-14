@@ -1,0 +1,13 @@
+Package: coremp135-firmware
+Version: @VERSION@
+Architecture: armhf
+Maintainer: coremp135 build <noreply@example.invalid>
+Section: admin
+Priority: optional
+Description: Boot firmware for the M5Stack CoreMP135 (TF-A, OP-TEE, U-Boot)
+ Installs the TF-A BL2 image and the FIP (OP-TEE + U-Boot) built from
+ upstream sources to /usr/lib/coremp135/firmware. Nothing is written to
+ the SD card automatically: run `coremp135-flash-bootloader` to update the
+ boot partitions.
+ .
+ @VERSIONS@

@@ -1,0 +1,33 @@
+# ILI9342C 320x240 init sequence for the M5Stack CoreMP135 built-in LCD.
+# Compiled to /lib/firmware/m5stack,coremp135-panel.bin by scripts/mipi-dbi-cmd.py
+# and loaded by the upstream panel-mipi-dbi driver (CONFIG_DRM_PANEL_MIPI_DBI).
+#
+# Format: one command per line: <cmd> [params...]  (hex bytes)
+#         "delay <ms>" inserts a pause.
+# Sequence taken from M5Stack's ili9342c tinydrm driver (CoreMP135 BSP).
+
+0x28                                    # display off
+0xCF 0x00 0x83 0x30                     # power control B
+0xED 0x64 0x03 0x12 0x81                # power on sequence
+0xE8 0x85 0x01 0x79                     # driver timing A
+0xCB 0x39 0x2C 0x00 0x34 0x02           # power control A
+0xF7 0x20                               # pump ratio
+0xEA 0x00 0x00                          # driver timing B
+0xC0 0x26                               # power control 1
+0xC1 0x11                               # power control 2
+0xC5 0x35 0x3E                          # VCOM control 1
+0xC7 0xBE                               # VCOM control 2
+0x3A 0x55                               # pixel format: 16bpp
+0xB1 0x00 0x1B                          # frame rate
+0xF2 0x08                               # 3-gamma enable
+0x26 0x01                               # gamma curve
+0xE0 0x1F 0x1A 0x18 0x0A 0x0F 0x06 0x45 0x87 0x32 0x0A 0x07 0x02 0x07 0x05 0x00
+0xE1 0x00 0x25 0x27 0x05 0x10 0x09 0x3A 0x78 0x4D 0x05 0x18 0x0D 0x38 0x3A 0x1F
+0xB7 0x07                               # entry mode
+0xB6 0x0A 0x82 0x27 0x00                # display function control
+0x36 0x08                               # MADCTL: BGR, landscape 320x240 (try 0xC8 to rotate 180)
+0x21                                    # display inversion on
+0x11                                    # sleep out
+delay 120
+0x29                                    # display on
+delay 20

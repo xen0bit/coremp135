@@ -1,0 +1,8 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR BSD-3-Clause)
+/* Use the USB-C port as a USB host instead of a gadget */
+/dts-v1/;
+/plugin/;
+
+&usbotg_hs {
+	dr_mode = "host";
+};

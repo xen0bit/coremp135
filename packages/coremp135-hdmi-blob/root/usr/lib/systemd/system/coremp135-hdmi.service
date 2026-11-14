@@ -1,0 +1,12 @@
+[Unit]
+Description=Configure the LT8618SXB HDMI bridge (M5Stack binary)
+After=systemd-modules-load.service
+ConditionPathExists=/dev/i2c-0
+
+[Service]
+Type=simple
+ExecStart=/usr/lib/coremp135/lt8618sxb_mcu_config
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target

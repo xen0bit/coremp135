@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+if [ "$1" = configure ]; then
+	echo "coremp135-firmware: new boot firmware installed in /usr/lib/coremp135/firmware."
+	echo "coremp135-firmware: run 'sudo coremp135-flash-bootloader' to write it to the SD card."
+fi

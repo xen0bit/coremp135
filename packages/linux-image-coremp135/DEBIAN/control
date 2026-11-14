@@ -1,0 +1,10 @@
+Package: linux-image-coremp135
+Version: @VERSION@
+Architecture: armhf
+Maintainer: coremp135 build <noreply@example.invalid>
+Depends: linux-image-@KREL@ (= @KPKGVER@)
+Section: kernel
+Priority: optional
+Description: Linux kernel for the M5Stack CoreMP135 (latest)
+ Metapackage that always depends on the newest CoreMP135 kernel, so
+ `apt upgrade` pulls in new kernels.

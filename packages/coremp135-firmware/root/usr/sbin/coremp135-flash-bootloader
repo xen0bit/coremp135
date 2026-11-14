@@ -1,0 +1,37 @@
+#!/bin/sh
+# Write TF-A (fsbl1, fsbl2) and the FIP (OP-TEE + U-Boot) to the boot device's
+# GPT partitions. Usage: coremp135-flash-bootloader [-y] [firmware-dir]
+set -eu
+yes=0; [ "${1:-}" = "-y" ] && { yes=1; shift; }
+FW=${1:-/usr/lib/coremp135/firmware}
+TFA="$FW/tf-a-stm32mp135f-coremp135.stm32"
+FIP="$FW/fip.bin"
+
+[ "$(id -u)" = 0 ] || { echo "must run as root" >&2; exit 1; }
+for f in "$TFA" "$FIP"; do [ -s "$f" ] || { echo "missing $f" >&2; exit 1; }; done
+
+part() { readlink -f "/dev/disk/by-partlabel/$1"; }
+for p in fsbl1 fsbl2 fip; do
+	[ -b "$(part $p)" ] || { echo "partition '$p' not found (is this a CoreMP135 SD card?)" >&2; exit 1; }
+done
+
+check_fits() { # file partition
+	need=$(stat -c %s "$1"); have=$(blockdev --getsize64 "$(part "$2")")
+	[ "$need" -le "$have" ] || { echo "$1 ($need B) does not fit in $2 ($have B)" >&2; exit 1; }
+}
+check_fits "$TFA" fsbl1; check_fits "$TFA" fsbl2; check_fits "$FIP" fip
+
+echo "Will write:"
+echo "  $(basename "$TFA") -> fsbl1 ($(part fsbl1)), fsbl2 ($(part fsbl2))"
+echo "  $(basename "$FIP") -> fip ($(part fip))"
+[ -r "$FW/VERSIONS" ] && sed 's/^/  /' "$FW/VERSIONS"
+if [ "$yes" != 1 ]; then
+	printf "Continue? [y/N] "; read -r a; [ "$a" = y ] || [ "$a" = Y ] || exit 1
+fi
+
+# FIP first, then the backup BL2, then the primary BL2.
+dd if="$FIP" of="$(part fip)" bs=64k conv=fsync status=none
+dd if="$TFA" of="$(part fsbl2)" bs=64k conv=fsync status=none
+dd if="$TFA" of="$(part fsbl1)" bs=64k conv=fsync status=none
+sync
+echo "Done. The new boot firmware will be used on next reboot."

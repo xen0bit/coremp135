@@ -1,0 +1,139 @@
+From: MeemeeLab <57629983+MeemeeLab@users.noreply.github.com>
+Subject: [PATCH] backlight: add M5Stack AXP2101 DLDO1 backlight driver
+
+Rewritten for 6.18 from the driver in M5Stack's CoreMP135 BSP: uses the
+parent simple-mfd-i2c regmap and backlight_get_brightness().
+---
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index d9374d208..c4e5a5981 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -144,6 +144,14 @@ config BACKLIGHT_CLASS_DEVICE
+ 
+ if BACKLIGHT_CLASS_DEVICE
+ 
++config BACKLIGHT_AXP2101_M5STACK
++	tristate "M5Stack AXP2101 DLDO1 backlight"
++	depends on I2C
++	select MFD_SIMPLE_MFD_I2C
++	help
++	  Backlight driven from the DLDO1 rail of an X-Powers AXP2101 PMU,
++	  as found on M5Stack boards such as the CoreMP135.
++
+ config BACKLIGHT_ATMEL_LCDC
+ 	bool "Atmel LCDC Contrast-as-Backlight control"
+ 	depends on FB_ATMEL
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index dfbb169bf..98c186dfe 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -23,6 +23,7 @@ obj-$(CONFIG_BACKLIGHT_ADP5520)		+= adp5520_bl.o
+ obj-$(CONFIG_BACKLIGHT_ADP8860)		+= adp8860_bl.o
+ obj-$(CONFIG_BACKLIGHT_ADP8870)		+= adp8870_bl.o
+ obj-$(CONFIG_BACKLIGHT_APPLE)		+= apple_bl.o
++obj-$(CONFIG_BACKLIGHT_AXP2101_M5STACK)	+= axp2101_m5stack_bl.o
+ obj-$(CONFIG_BACKLIGHT_APPLE_DWI)	+= apple_dwi_bl.o
+ obj-$(CONFIG_BACKLIGHT_AS3711)		+= as3711_bl.o
+ obj-$(CONFIG_BACKLIGHT_BD6107)		+= bd6107.o
+diff --git a/drivers/video/backlight/axp2101_m5stack_bl.c b/drivers/video/backlight/axp2101_m5stack_bl.c
+new file mode 100644
+index 000000000..525986bb5
+--- /dev/null
++++ b/drivers/video/backlight/axp2101_m5stack_bl.c
+@@ -0,0 +1,96 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * Backlight driver for M5Stack boards that power the LCD backlight from
++ * the DLDO1 rail of an X-Powers AXP2101 PMU (e.g. CoreMP135).
++ *
++ * Brightness is set by scaling the DLDO1 output voltage between 0.5 V and
++ * 3.3 V (100 mV steps); brightness 0 disables the LDO.
++ *
++ * Based on the driver by MeemeeLab in M5Stack's CoreMP135 BSP.
++ */
++#include <linux/backlight.h>
++#include <linux/mod_devicetable.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/regmap.h>
++
++#define AXP2101_REG_LDO_EN_CFG0		0x90
++#define AXP2101_DLDO1_EN		BIT(7)
++#define AXP2101_REG_DLDO1_CFG		0x99
++#define AXP2101_DLDO1_VSEL_MAX		28	/* (3.3 V - 0.5 V) / 0.1 V */
++
++#define AXP2101_BL_MAX_BRIGHTNESS	100
++
++static int axp2101_bl_update_status(struct backlight_device *bl)
++{
++	struct regmap *regmap = bl_get_data(bl);
++	int brightness = backlight_get_brightness(bl);
++	unsigned int vsel;
++	int ret;
++
++	if (brightness) {
++		vsel = DIV_ROUND_UP(brightness * AXP2101_DLDO1_VSEL_MAX,
++				    AXP2101_BL_MAX_BRIGHTNESS);
++		ret = regmap_write(regmap, AXP2101_REG_DLDO1_CFG, vsel);
++		if (ret)
++			return ret;
++	}
++
++	return regmap_update_bits(regmap, AXP2101_REG_LDO_EN_CFG0,
++				  AXP2101_DLDO1_EN,
++				  brightness ? AXP2101_DLDO1_EN : 0);
++}
++
++static const struct backlight_ops axp2101_bl_ops = {
++	.options	= BL_CORE_SUSPENDRESUME,
++	.update_status	= axp2101_bl_update_status,
++};
++
++static int axp2101_bl_probe(struct platform_device *pdev)
++{
++	struct backlight_properties props = {
++		.type		= BACKLIGHT_RAW,
++		.max_brightness	= AXP2101_BL_MAX_BRIGHTNESS,
++		.brightness	= AXP2101_BL_MAX_BRIGHTNESS,
++		.scale		= BACKLIGHT_SCALE_NON_LINEAR,
++	};
++	struct backlight_device *bl;
++	struct regmap *regmap;
++
++	if (!pdev->dev.parent)
++		return -ENODEV;
++
++	regmap = dev_get_regmap(pdev->dev.parent, NULL);
++	if (!regmap)
++		return dev_err_probe(&pdev->dev, -ENODEV, "no parent regmap\n");
++
++	bl = devm_backlight_device_register(&pdev->dev, dev_name(&pdev->dev),
++					    &pdev->dev, regmap,
++					    &axp2101_bl_ops, &props);
++	if (IS_ERR(bl))
++		return dev_err_probe(&pdev->dev, PTR_ERR(bl),
++				     "failed to register backlight\n");
++
++	platform_set_drvdata(pdev, bl);
++
++	return backlight_update_status(bl);
++}
++
++static const struct of_device_id axp2101_bl_of_match[] = {
++	{ .compatible = "m5stack,axp2101-backlight" },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, axp2101_bl_of_match);
++
++static struct platform_driver axp2101_bl_driver = {
++	.driver = {
++		.name		= "axp2101-m5stack-bl",
++		.of_match_table	= axp2101_bl_of_match,
++	},
++	.probe = axp2101_bl_probe,
++};
++module_platform_driver(axp2101_bl_driver);
++
++MODULE_AUTHOR("MeemeeLab");
++MODULE_DESCRIPTION("M5Stack AXP2101 DLDO1 backlight driver");
++MODULE_LICENSE("GPL");
