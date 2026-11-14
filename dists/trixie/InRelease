@@ -5,7 +5,7 @@ Origin: CoreMP135
 Label: CoreMP135
 Suite: trixie
 Codename: trixie
-Date: Sat, 14 Nov 2026 23:14:05 UTC
+Date: Sat, 14 Nov 2026 23:50:28 UTC
 Architectures: armhf
 Components: main
 Description: Debian packages for the M5Stack CoreMP135
@@ -23,8 +23,8 @@ SHA256:
  4b553d12ceefa27b213a036e22deed2897dce7ccee40adfc45b5c3a120177e10 142 main/binary-armhf/Release
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQRaJw90AQJ7Wgir1FyXJC0OmNzvYAUCavjrPQAKCRCXJC0OmNzv
-YFIhAP9VlvdvrepjOCSbT7PkPC7n94enOjErngKOdYvrkmaGSgEA1X9LOcyhcsaY
-Sey5s3B85oMayjEWC0TPzwgAWMIT/As=
-=scUQ
+iHUEARYKAB0WIQRaJw90AQJ7Wgir1FyXJC0OmNzvYAUCavjzxAAKCRCXJC0OmNzv
+YI8EAQD7siITrxdDfBnnJ2ZDmZ1mvhXWWgew3EF+JIL/umBnsQD+PwNgDjgVELVH
+DND+ThmzMfsqI6RdpZbULB9IzrOaoA0=
+=pPC8
 -----END PGP SIGNATURE-----
