@@ -1,0 +1,6 @@
+Archive: trixie
+Component: main
+Origin: CoreMP135
+Label: CoreMP135
+Architecture: armhf
+Description: Debian packages for the M5Stack CoreMP135

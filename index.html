@@ -1,0 +1,6 @@
+<!doctype html><title>CoreMP135 apt repository</title>
+<h1>CoreMP135 apt repository</h1>
+<pre>
+sudo curl -fsSLo /usr/share/keyrings/coremp135-archive-keyring.pgp https://xen0bit.github.io/coremp135/coremp135-archive-keyring.pgp
+echo "deb [signed-by=/usr/share/keyrings/coremp135-archive-keyring.pgp] https://xen0bit.github.io/coremp135 trixie main" | sudo tee /etc/apt/sources.list.d/coremp135.list
+</pre>

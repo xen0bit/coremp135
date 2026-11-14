@@ -1,0 +1,8 @@
+Origin: CoreMP135
+Label: CoreMP135
+Suite: trixie
+Codename: trixie
+Architectures: armhf
+Components: main
+Description: Debian packages for the M5Stack CoreMP135
+SignWith: 5A270F7401027B5A08ABD45C97242D0E98DCEF60

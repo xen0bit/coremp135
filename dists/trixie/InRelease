@@ -1,0 +1,30 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Origin: CoreMP135
+Label: CoreMP135
+Suite: trixie
+Codename: trixie
+Date: Sat, 14 Nov 2026 23:14:05 UTC
+Architectures: armhf
+Components: main
+Description: Debian packages for the M5Stack CoreMP135
+MD5Sum:
+ 4ecbcc5cde9658a2a28c9fd6cbd6fc34 5010 main/binary-armhf/Packages
+ fc2f646580dc796b6b93f8dbfe82339c 1997 main/binary-armhf/Packages.gz
+ 3ae199ca0341dbab0403611596255f91 142 main/binary-armhf/Release
+SHA1:
+ 97cc21c57e07f0870a01d299010be2e0b6da4485 5010 main/binary-armhf/Packages
+ 18bfb5f741ab755f765b25632e7c3cf996441ead 1997 main/binary-armhf/Packages.gz
+ b2bd56bf8d994dfd79a76a42f50c7b7f43cd6935 142 main/binary-armhf/Release
+SHA256:
+ b877c4d3428ce47b18d47de11153726d375adb62c7c5d70a8bddf4986527910b 5010 main/binary-armhf/Packages
+ 3052f67cef426e7c1db8bdaf6d89092a03ee6ee13b383da0fb5e2a0db5cd2e36 1997 main/binary-armhf/Packages.gz
+ 4b553d12ceefa27b213a036e22deed2897dce7ccee40adfc45b5c3a120177e10 142 main/binary-armhf/Release
+-----BEGIN PGP SIGNATURE-----
+
+iHUEARYKAB0WIQRaJw90AQJ7Wgir1FyXJC0OmNzvYAUCavjrPQAKCRCXJC0OmNzv
+YFIhAP9VlvdvrepjOCSbT7PkPC7n94enOjErngKOdYvrkmaGSgEA1X9LOcyhcsaY
+Sey5s3B85oMayjEWC0TPzwgAWMIT/As=
+=scUQ
+-----END PGP SIGNATURE-----
