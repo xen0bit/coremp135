@@ -8,6 +8,10 @@ udev
 dbus
 kmod
 sudo
+# not Essential in trixie: agetty needs /bin/login for the serial consoles
+login
+# hwclock
+util-linux-extra
 locales
 tzdata
 less
@@ -30,6 +34,9 @@ cloud-guest-utils
 # networking
 iproute2
 iputils-ping
+# ping_group_range so unprivileged ping works (iputils-ping no longer uses setcap)
+linux-sysctl-defaults
+iw
 ethtool
 network-manager
 wpasupplicant
