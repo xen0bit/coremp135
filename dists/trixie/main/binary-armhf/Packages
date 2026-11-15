@@ -1,14 +1,14 @@
 Package: coremp135-firmware
-Version: 1.1-1
+Version: 1.2-1
 Architecture: armhf
 Maintainer: coremp135 build <noreply@example.invalid>
 Priority: optional
 Section: admin
-Filename: pool/main/c/coremp135-firmware/coremp135-firmware_1.1-1_armhf.deb
-Size: 727972
-SHA256: 2d9fbb633d4b671073f68252c8bef63d9c01d5c8befd6f18678469bf669810c3
-SHA1: 1d26b6498ebc4b1d023b63c1a0f4de6588a78635
-MD5sum: 71369a985d0d9816aca7e664749134da
+Filename: pool/main/c/coremp135-firmware/coremp135-firmware_1.2-1_armhf.deb
+Size: 728228
+SHA256: f84e8c67c5b684e0510cdef9fc5a74b9c7897717ccd2730c8554e57535578841
+SHA1: 5b9190e3580c5a8eaf9897ea5fc5fb53ab672045
+MD5sum: 3ff49681c67d77ac0fbe8bf1f85aac4a
 Description: Boot firmware for the M5Stack CoreMP135 (TF-A, OP-TEE, U-Boot)
  Installs the TF-A BL2 image and the FIP (OP-TEE + U-Boot) built from
  upstream sources to /usr/lib/coremp135/firmware. Nothing is written to
@@ -37,17 +37,17 @@ Description: LT8618SXB HDMI bridge setup for the M5Stack CoreMP135 (binary)
  Temporary: to be replaced by a Linux DRM bridge driver (see docs/TODO.md).
 
 Package: coremp135-support
-Version: 1.1-1
+Version: 1.2-1
 Architecture: all
 Maintainer: coremp135 build <noreply@example.invalid>
 Depends: linux-image-coremp135, cloud-guest-utils, e2fsprogs, gdisk
 Priority: optional
 Section: admin
-Filename: pool/main/c/coremp135-support/coremp135-support_1.1-1_all.deb
-Size: 3892
-SHA256: 07be4e29e385f9ea950c143c86dc1eeef32203fe02ced834f7e650f4096ec04f
-SHA1: 493344ad78a95513d36f295e5aad7b881a1ce6ac
-MD5sum: 68538eb66f5c2ee3ae5eba786649e885
+Filename: pool/main/c/coremp135-support/coremp135-support_1.2-1_all.deb
+Size: 4124
+SHA256: 36e8d41037b297577af036954263835b3a18d3b4de7522f3281f39f3ba7baee4
+SHA1: 1aa787028db53f49f25e2c46b94b0458084de894
+MD5sum: 6ee79a5fd3ddb28cdb1e6c8487367369
 Description: Board support for the M5Stack CoreMP135
  extlinux.conf generation on kernel install/removal (U-Boot boot menu),
  LCD panel init firmware, first-boot root filesystem growth, USB gadget
@@ -55,69 +55,69 @@ Description: Board support for the M5Stack CoreMP135
 
 Package: linux-headers-6.18.63-coremp135
 Source: linux-coremp135
-Version: 6.18.63-1.1
+Version: 6.18.63-1.3
 Architecture: armhf
 Maintainer: coremp135 <coremp135@build>
 Installed-Size: 53436
 Homepage: https://www.kernel.org/
 Priority: optional
 Section: kernel
-Filename: pool/main/l/linux-coremp135/linux-headers-6.18.63-coremp135_6.18.63-1.1_armhf.deb
-Size: 8882560
-SHA256: 325db48f4e9e96ab75c21080303e1e10079b8f5daa727c6f85aac4193e7837d0
-SHA1: 8bb1e2cc7405e278fa95b9378a3b5eba92529045
-MD5sum: df68216a976ea2200770d0d2655c0c3b
+Filename: pool/main/l/linux-coremp135/linux-headers-6.18.63-coremp135_6.18.63-1.3_armhf.deb
+Size: 8882844
+SHA256: 87389ffa9a872db0b057c8b64aee74e45529cc7f3ddb254192ff0ebabb682c57
+SHA1: c692914633205c7db52ea65ce0b1a475aabab5ea
+MD5sum: fdf78b2b0f08af9fc8987401df426a5a
 Description: Linux kernel headers for 6.18.63-coremp135 on armhf
  This package provides kernel header files for 6.18.63-coremp135 on armhf
  .
  This is useful for people who need to build external modules
 
 Package: linux-headers-coremp135
-Version: 6.18.63-1.1
+Version: 6.18.63-1.3
 Architecture: armhf
 Maintainer: coremp135 build <noreply@example.invalid>
-Depends: linux-headers-6.18.63-coremp135 (= 6.18.63-1.1)
+Depends: linux-headers-6.18.63-coremp135 (= 6.18.63-1.3)
 Priority: optional
 Section: kernel
-Filename: pool/main/l/linux-headers-coremp135/linux-headers-coremp135_6.18.63-1.1_armhf.deb
+Filename: pool/main/l/linux-headers-coremp135/linux-headers-coremp135_6.18.63-1.3_armhf.deb
 Size: 816
-SHA256: a063bef0aa390d4cc318d142e9319d99465116bc8a5da9763a205a9139cc17e8
-SHA1: 5958a5c627c094ede287fbe21994039aa73c89b0
-MD5sum: cf9651018c28ae533c91fcf6d6c7e8cc
+SHA256: 3a065aa28759d68a1ae48ba0283090ab67f43e0325d4fb3aa1f2beeb04656278
+SHA1: 1a1d788a96d29d0daa395c7a3ee20f345d14f471
+MD5sum: 1ddaf9f0584ee0d44e18161011658cc2
 Description: Linux kernel headers for the M5Stack CoreMP135 (latest)
  Metapackage for building out-of-tree modules (e.g. DKMS) against the
  newest CoreMP135 kernel.
 
 Package: linux-image-6.18.63-coremp135
 Source: linux-coremp135
-Version: 6.18.63-1.1
+Version: 6.18.63-1.3
 Architecture: armhf
 Maintainer: coremp135 <coremp135@build>
-Installed-Size: 105836
+Installed-Size: 105828
 Homepage: https://www.kernel.org/
 Priority: optional
 Section: kernel
-Filename: pool/main/l/linux-coremp135/linux-image-6.18.63-coremp135_6.18.63-1.1_armhf.deb
-Size: 23420620
-SHA256: adda6d5d0db32adc6521c5834a87d635edb5e4bef2adf5377f11f7011407a697
-SHA1: b430118ede897da1168e0cb179fb3d83a0a2aea2
-MD5sum: c9fef11b570db6c706e715e362f11227
+Filename: pool/main/l/linux-coremp135/linux-image-6.18.63-coremp135_6.18.63-1.3_armhf.deb
+Size: 23423736
+SHA256: 19413696ff6f0862711d4ee78d1675b7484594787fada6e5c5faad76690c82a4
+SHA1: 56395dad472e08f999ba13ad60ccd4763891ffb6
+MD5sum: 6446ad151ac7ad809c513d4e52e760a7
 Description: Linux kernel, version 6.18.63-coremp135
  This package contains the Linux kernel, modules and corresponding other
  files, version: 6.18.63-coremp135.
 
 Package: linux-image-coremp135
-Version: 6.18.63-1.1
+Version: 6.18.63-1.3
 Architecture: armhf
 Maintainer: coremp135 build <noreply@example.invalid>
-Depends: linux-image-6.18.63-coremp135 (= 6.18.63-1.1)
+Depends: linux-image-6.18.63-coremp135 (= 6.18.63-1.3)
 Priority: optional
 Section: kernel
-Filename: pool/main/l/linux-image-coremp135/linux-image-coremp135_6.18.63-1.1_armhf.deb
+Filename: pool/main/l/linux-image-coremp135/linux-image-coremp135_6.18.63-1.3_armhf.deb
 Size: 816
-SHA256: 7e5ca457a34f419666f5fb8b4776716b906e796d0f98a9befda73702c8296737
-SHA1: 4f2594ae3d40586f95a853167d40b3b45d65d301
-MD5sum: bd90800f5c60062dbad2d7a8d4c4fc35
+SHA256: 9c0fabf3d59c6e84bf8fc4b6aca5f7697fdde824939dabdeb63fde33a602b436
+SHA1: 64a25cfce1a8ebecaf6bef63b4669736ed4e1a22
+MD5sum: 818e6ee843261a41a4d882be3d2d893d
 Description: Linux kernel for the M5Stack CoreMP135 (latest)
  Metapackage that always depends on the newest CoreMP135 kernel, so
  `apt upgrade` pulls in new kernels.
