@@ -9,6 +9,7 @@ First board test (2026-11-14, CI image from `main`):
 - [x] RTC (`rtc0`, BM8563) sets the clock at boot and is kept in sync by NTP.
 - [x] LCD (`panel-mipi-dbi`, 40 MHz SPI) shows the text console the right way
       up (`fbcon=map:1`). Backlight dims; the speaker plays a test tone.
+- [x] `poweroff` cuts power via the AXP2101.
 - [x] Touch (FT6336U) reports taps with axes matching the LCD; both ALSA cards, HDMI blob service runs, USB hub
       enumerates.
 - [x] Ethernet `end1` (ETH2, 5800e000) links at 1 Gbit/s with DHCP.
@@ -33,7 +34,6 @@ First board test (2026-11-14, CI image from `main`):
       udev's `MACAddressPolicy=persistent` keeps them stable (derived from
       `/etc/machine-id`, so they change on reflash). Consider deriving them
       from the SoC UID in U-Boot instead.
-- [ ] `poweroff` really cuts power (AXP2101).
 - [ ] Speaker: `aplay -l`, then `speaker-test -c 1 -D plughw:<card>` (SAI1 clocks come from
       OP-TEE PLL3 via SCMI).
 - [ ] CAN: `ip link set can0 up type can bitrate 500000`; can0 <-> can1 loopback.
