@@ -1,0 +1,7 @@
+# PAM session for coremp135-kiosk@.service. pam_systemd registers it with
+# logind as a seat0 session on the VT, so cage can open the display and the
+# touchscreen without root.
+auth     required pam_unix.so nullok
+account  required pam_unix.so
+session  required pam_unix.so
+session  required pam_systemd.so

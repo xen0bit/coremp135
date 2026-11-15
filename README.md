@@ -99,7 +99,7 @@ CP210x, CH34x, PL2303, CDC-ACM) and common USB WiFi/Bluetooth dongles
 |---|---|---|
 | 2x Gigabit Ethernet (RTL8211F) | `dwmac-stm32` | mainline |
 | microSD | `mmci` (STM32 SDMMC) | mainline |
-| 2" 320x240 LCD (ILI9342C, SPI) | `panel-mipi-dbi` + init file | mainline driver, text console (`fbcon=map:1`) |
+| 2" 320x240 LCD (ILI9342C, SPI) | `panel-mipi-dbi` + init file | mainline driver, text console (`fbcon=map:1`) or a [kiosk app](#gui-apps-on-the-lcd) |
 | LCD backlight (AXP2101 DLDO1) | `axp2101_m5stack_bl` | board patch |
 | Power off (AXP2101) | `axp2101-poweroff` | board patch |
 | Touch (FT6336U) | `edt-ft5x06` | mainline |
@@ -124,6 +124,31 @@ PLL4Q. HDMI audio is 48 kHz I2S on the `CoreMP135-HDMI` ALSA card.
 The HDMI output is DRM card 0 (`/dev/fb0`), the LCD is card 1 (`/dev/fb1`). The
 text console is on the LCD (`fbcon=map:1` in `/etc/default/coremp135`); use
 `fbcon=map:0` for HDMI.
+
+### GUI apps on the LCD
+
+`coremp135-support` ships an optional kiosk service. It runs one full-screen
+Wayland app on the LCD with the [cage](https://github.com/cage-kiosk/cage)
+compositor, in place of the text login on tty1:
+
+```sh
+sudo apt install cage foot
+sudo systemctl enable --now coremp135-kiosk@tty1   # starts at boot from now on
+```
+
+- The app is `KIOSK_APP` in `/etc/default/coremp135-kiosk` (default: the
+  `foot` terminal). After changing it, run
+  `sudo systemctl restart coremp135-kiosk@tty1`.
+- It runs as the `coremp135` user in a logind session. cage gets the
+  touchscreen as a touch device and passes touches to the app.
+- To go back to the text console:
+  `sudo systemctl disable --now coremp135-kiosk@tty1 && sudo systemctl start getty@tty1`.
+
+There is no GPU, so cage renders in software (pixman) on the 650 MHz CPU, and
+the SPI link limits the panel to roughly 30 full-screen updates per second.
+Pick lightweight apps; cage plus `foot` uses about 15 MB of RAM. For a custom
+UI, Qt (`QT_QPA_PLATFORM=linuxfb:fb=/dev/fb1`), SDL2 (`kmsdrm`) or LVGL can
+also draw on the LCD directly, without a compositor.
 
 ## Credits
 

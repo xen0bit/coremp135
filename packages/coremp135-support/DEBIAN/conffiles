@@ -1,1 +1,3 @@
 /etc/default/coremp135
+/etc/default/coremp135-kiosk
+/etc/pam.d/coremp135-kiosk
