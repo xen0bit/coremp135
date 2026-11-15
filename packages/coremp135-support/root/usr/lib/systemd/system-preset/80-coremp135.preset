@@ -1,3 +1,2 @@
 enable coremp135-firstboot.service
 enable serial-getty@ttyGS0.service
-enable coremp135-hdmi.service

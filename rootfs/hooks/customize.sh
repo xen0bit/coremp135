@@ -4,7 +4,7 @@
 set -euo pipefail
 R=$1
 
-# Our packages (kernel, board support, firmware, HDMI blob)
+# Our packages (kernel, board support, firmware)
 mkdir -p "$R/tmp/debs"
 cp "$DEBS"/*.deb "$R/tmp/debs/"
 chroot "$R" sh -c 'DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends /tmp/debs/*.deb'
@@ -27,7 +27,7 @@ echo 'LANG=C.UTF-8' > "$R/etc/default/locale"
 
 # Services
 chroot "$R" systemctl preset-all >/dev/null 2>&1 || true
-chroot "$R" systemctl enable coremp135-firstboot.service serial-getty@ttyGS0.service coremp135-hdmi.service
+chroot "$R" systemctl enable coremp135-firstboot.service serial-getty@ttyGS0.service
 # NetworkManager owns networking
 chroot "$R" systemctl disable systemd-networkd.service systemd-networkd.socket systemd-networkd-wait-online.service >/dev/null 2>&1 || true
 
