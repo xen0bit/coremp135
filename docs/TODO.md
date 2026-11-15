@@ -36,11 +36,12 @@ First board test (2026-11-14, CI image from `main`):
       from the SoC UID in U-Boot instead.
 - [ ] CAN: `ip link set can0 up type can bitrate 500000`; can0 <-> can1 loopback.
 - [ ] RS485 on `/dev/ttySTM3` (hardware DE on PD12).
-- [ ] HDMI picture and audio on a monitor (`lontium-lt8618sxb` bridge driver,
-      720p60, 74.25 MHz pixel clock from PLL4Q). PLL4 changed from a 600 to a
-      594 MHz VCO for this, so SDMMC now runs from 99 MHz (49.5 MHz bus clock
-      in high-speed mode): re-check SD card speed. The PLL settings only take
-      effect after `sudo coremp135-flash-bootloader`.
+- [x] HDMI pipeline with the new boot firmware: PLL4Q and the LTDC pixel clock
+      are 74.25 MHz, the LT8618SXB probes (chip ID 17 02 e2) and its TX PLL
+      locks. SDMMC runs from PLL4P = 99 MHz (49.5 MHz bus clock): SD reads
+      22.9 MB/s vs 23.2 MB/s before. The hardware RNG (PLL4R = 49.5 MHz) works.
+- [ ] HDMI picture and audio on a monitor. The PLL4 change only takes effect
+      after `sudo coremp135-flash-bootloader`.
 - [ ] HDMI modes other than 720p: read EDID through the LT8618SXB's DDC
       master, and program the chip for the chosen mode.
 
