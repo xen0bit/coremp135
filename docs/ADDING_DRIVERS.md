@@ -21,6 +21,7 @@ in name order:
 
 ```
 00-coremp135-base.config   board essentials (don't remove things here)
+05-trim.config             drops other SoC platforms, PCI and SATA
 10-usb-serial.config       USB serial adapters, USB-CAN, USB-Ethernet, modems
 20-wifi.config             USB WiFi dongles
 30-bluetooth.config        USB Bluetooth dongles

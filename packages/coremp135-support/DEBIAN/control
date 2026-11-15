@@ -3,6 +3,7 @@ Version: @VERSION@
 Architecture: all
 Maintainer: coremp135 build <noreply@example.invalid>
 Depends: linux-image-coremp135, cloud-guest-utils, e2fsprogs, gdisk
+Conflicts: coremp135-hdmi-blob
 Section: admin
 Priority: optional
 Description: Board support for the M5Stack CoreMP135

@@ -1,13 +1,12 @@
 #!/bin/bash
 # Assemble the board .debs from packages/*: coremp135-support,
-# coremp135-firmware, coremp135-hdmi-blob and the kernel metapackages.
+# coremp135-firmware and the kernel metapackages.
 # Needs build-firmware.sh and build-kernel.sh to have run.
 source "$(dirname "$0")/common.sh"
 
 # Versions only increase when a package's inputs change (see input_rev).
 SUPPORT_VERSION="1.$(input_rev packages/coremp135-support board/panel scripts/build-packages.sh scripts/mipi-dbi-cmd.py)-$PKG_REVISION"
 FIRMWARE_VERSION="1.$(input_rev board/dts board/patches/tfa board/patches/optee board/patches/uboot board/uboot scripts/build-firmware.sh versions.env)-$PKG_REVISION"
-HDMI_VERSION="1.$(input_rev packages/coremp135-hdmi-blob versions.env)-$PKG_REVISION"
 STAGE="$BUILD/pkg-stage"
 rm -rf "$STAGE"; mkdir -p "$STAGE"
 
@@ -60,23 +59,6 @@ subst "$d/DEBIAN/control" VERSION "$FIRMWARE_VERSION" \
 	VERSIONS "Built from TF-A $TFA_REF, OP-TEE $OPTEE_REF, U-Boot $UBOOT_REF."
 mkdir -p "$d/usr/lib/coremp135/firmware"
 cp "$OUT"/firmware/* "$d/usr/lib/coremp135/firmware/"
-build_deb "$d"
-
-# --- coremp135-hdmi-blob (fetched, verified, never committed)
-d=$(stage coremp135-hdmi-blob)
-subst "$d/DEBIAN/control" VERSION "$HDMI_VERSION"
-mkdir -p "$d/usr/lib/coremp135"
-blob="$BUILD/lt8618sxb_mcu_config"
-[ -s "$blob" ] || curl -fsSL -o "$blob" "$HDMI_BLOB_URL"
-echo "$HDMI_BLOB_SHA256  $blob" | sha256sum -c --quiet
-install -m 755 "$blob" "$d/usr/lib/coremp135/lt8618sxb_mcu_config"
-lic="$BUILD/m5stack-LICENSE"
-[ -s "$lic" ] || curl -fsSL -o "$lic" "${HDMI_BLOB_URL%%/tools/*}/LICENSE"
-mkdir -p "$d/usr/share/doc/coremp135-hdmi-blob"
-{ echo "lt8618sxb_mcu_config: prebuilt binary from $HDMI_BLOB_URL"
-  echo "sha256: $HDMI_BLOB_SHA256"
-  echo "Distributed under the license of that repository:"; echo; cat "$lic"; } \
-	> "$d/usr/share/doc/coremp135-hdmi-blob/copyright"
 build_deb "$d"
 
 # --- kernel metapackages

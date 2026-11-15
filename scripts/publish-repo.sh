@@ -33,6 +33,10 @@ for deb in "$DEBS"/*.deb; do
 	fi
 	reprepro -b "$REPO_DIR" --ignore=wrongdistribution includedeb "$APT_SUITE" "$deb"
 done
+# Packages we no longer build. Devices drop them via Conflicts on upgrade.
+for old in coremp135-hdmi-blob; do
+	reprepro -b "$REPO_DIR" remove "$APT_SUITE" "$old" >/dev/null 2>&1 || true
+done
 reprepro -b "$REPO_DIR" export
 cp "$OUT/coremp135-archive-keyring.pgp" "$REPO_DIR/"
 touch "$REPO_DIR/.nojekyll"

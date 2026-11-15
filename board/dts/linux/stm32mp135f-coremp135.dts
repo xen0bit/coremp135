@@ -72,9 +72,9 @@
 	};
 
 	/*
-	 * HDMI: LTDC parallel RGB -> Lontium LT8618SXB. There is no mainline
-	 * driver for the bridge yet; it is set up from userspace
-	 * (coremp135-hdmi package). The LTDC drives a fixed 720p timing.
+	 * HDMI: LTDC parallel RGB -> Lontium LT8618SXB (hdmi-bridge@39 on
+	 * i2c3) -> this fixed 720p mode. The bridge's DDC/EDID is not used.
+	 * The 74.25 MHz pixel clock is PLL4Q (board/dts/optee).
 	 */
 	panel-hdmi {
 		compatible = "panel-dpi";
@@ -100,8 +100,8 @@
 		};
 
 		port {
-			panel_in_rgb: endpoint {
-				remote-endpoint = <&ltdc_out_rgb>;
+			panel_in_hdmi: endpoint {
+				remote-endpoint = <&hdmi_bridge_out>;
 			};
 		};
 	};
@@ -278,6 +278,30 @@
 		touchscreen-size-y = <240>;
 	};
 
+	hdmi-bridge@39 {
+		compatible = "lontium,lt8618sxb";
+		reg = <0x39>;
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				hdmi_bridge_in: endpoint {
+					remote-endpoint = <&ltdc_out_rgb>;
+				};
+			};
+
+			port@1 {
+				reg = <1>;
+				hdmi_bridge_out: endpoint {
+					remote-endpoint = <&panel_in_hdmi>;
+				};
+			};
+		};
+	};
+
 	bm8563: rtc@51 {
 		compatible = "nxp,pcf8563";
 		reg = <0x51>;
@@ -308,7 +332,7 @@
 
 	port {
 		ltdc_out_rgb: endpoint {
-			remote-endpoint = <&panel_in_rgb>;
+			remote-endpoint = <&hdmi_bridge_in>;
 		};
 	};
 };
