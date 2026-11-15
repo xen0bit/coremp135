@@ -10,8 +10,9 @@ First board test (2026-11-14, CI image from `main`):
 - [x] LCD (`panel-mipi-dbi`, 40 MHz SPI) shows the text console the right way
       up (`fbcon=map:1`). Backlight dims; the speaker plays a test tone.
 - [x] `poweroff` cuts power via the AXP2101.
-- [x] Touch (FT6336U) reports taps with axes matching the LCD; both ALSA cards, HDMI blob service runs, USB hub
-      enumerates.
+- [x] Touch (FT6336U) reports taps with axes matching the LCD; both ALSA cards, HDMI blob service runs.
+- [x] USB-A (GL852G hub): a USB 3.0 flash drive enumerates at high speed,
+      `usb-storage` binds, ~35 MB/s sequential read.
 - [x] Ethernet `end1` (ETH2, 5800e000) links at 1 Gbit/s with DHCP.
 - [ ] **Ethernet `end0` (ETH1, 5800a000) doesn't come up**: every open fails with
       `Failed to reset the dma`, with or without a cable. The DWMAC DMA
@@ -38,7 +39,6 @@ First board test (2026-11-14, CI image from `main`):
       OP-TEE PLL3 via SCMI).
 - [ ] CAN: `ip link set can0 up type can bitrate 500000`; can0 <-> can1 loopback.
 - [ ] RS485 on `/dev/ttySTM3` (hardware DE on PD12).
-- [ ] USB-A ports (via GL852G hub) and USB-C gadget serial.
 - [ ] HDMI: the LTDC pixel clock is 74.25 MHz from PLL4 (owned by OP-TEE).
       Check that Linux can get that rate, or tune `pll4` in
       `board/dts/optee/` so that LTDC_PX can reach it.
