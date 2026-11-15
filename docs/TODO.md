@@ -1,25 +1,44 @@
 # TODO / known gaps
 
 ## Needs verification on hardware
-This build compiles and the update path has been tested in emulation. These
-items still need a real board:
+First board test (2026-11-14, CI image from `main`):
 
-- [ ] TF-A/OP-TEE/U-Boot reach the U-Boot prompt (console on PORT.C).
+- [x] TF-A → OP-TEE → U-Boot → Linux boots from SD; rootfs grows; first-boot
+      SSH keys; `apt update`/`install` from Debian and the Pages repo.
+- [x] USB-C gadget serial console (`/dev/ttyACM*` on the host).
+- [x] RTC (`rtc0`, BM8563) sets the clock at boot and is kept in sync by NTP.
+- [x] LCD (`panel-mipi-dbi`, 40 MHz SPI) shows the text console the right way
+      up (`fbcon=map:1`). Backlight dims; the speaker plays a test tone.
+- [x] `poweroff` cuts power via the AXP2101.
+- [x] Touch (FT6336U) reports taps with axes matching the LCD; both ALSA cards, HDMI blob service runs.
+- [x] USB-A (GL852G hub): a USB 3.0 flash drive enumerates at high speed,
+      `usb-storage` binds, ~35 MB/s sequential read.
+- [x] Ethernet `end1` (ETH2, 5800e000) links at 1 Gbit/s with DHCP.
+- [ ] **Ethernet `end0` (ETH1, 5800a000) doesn't come up**: every open fails with
+      `Failed to reset the dma`, with or without a cable. The DWMAC DMA
+      software reset needs RX_CLK and the 125 MHz clock on ETH1_CLK125 (PF12)
+      from the PHY, so one of them is missing. The same open works on `end1`
+      without a cable. Already ruled out:
+      - pinmux (identical to M5Stack's DT and to mainline `eth1_rgmii_pins_a`);
+      - SYSCFG mode (PMCSETR `0x20200000`: both RGMII with an external clock);
+      - RCC clocks (identical for both MACs);
+      - PHY ALDPS (off);
+      - a longer PHY reset delay (200 ms).
+      Next steps: check on the stock M5Stack image whether this port works at
+      all, then read PHY1's PHYCR2 CLKOUT from U-Boot (`mdio read`) or check
+      the schematic for how ETH1_CLK125 is wired.
+- [ ] TF-A/OP-TEE/U-Boot console on PORT.C (needs a USB-UART).
 - [ ] Console pin swap: Linux uses `rx-tx-swap` on USART6 (copied from
       M5Stack), the bootloaders don't. Decide whether to keep it.
-- [ ] Both Ethernet ports link at 1 Gbit/s. The PHYs supply the 125 MHz
-      clock on ETHx_CLK125 (no `st,ext-phyclk`), as in the vendor DT.
-- [ ] LCD: `panel-mipi-dbi` + `/lib/firmware/m5stack,coremp135-panel.bin`.
-      Check the orientation (MADCTL in `board/panel/*.txt`), colours (BGR,
-      inversion) and the 40 MHz SPI clock.
-- [ ] Touch axes vs. LCD orientation (`touchscreen-*` properties).
-- [ ] Backlight: `/sys/class/backlight/*/brightness` 0–100.
-- [ ] `poweroff` really cuts power (AXP2101).
+- [ ] Backlight: changing `/sys/class/backlight/*/brightness` (0–100) dims the panel.
+- [ ] OTP has no MAC addresses programmed; the kernel assigns random ones and
+      udev's `MACAddressPolicy=persistent` keeps them stable (derived from
+      `/etc/machine-id`, so they change on reflash). Consider deriving them
+      from the SoC UID in U-Boot instead.
 - [ ] Speaker: `aplay -l`, then `speaker-test -c 1 -D plughw:<card>` (SAI1 clocks come from
       OP-TEE PLL3 via SCMI).
 - [ ] CAN: `ip link set can0 up type can bitrate 500000`; can0 <-> can1 loopback.
 - [ ] RS485 on `/dev/ttySTM3` (hardware DE on PD12).
-- [ ] USB-A ports (via GL852G hub) and USB-C gadget serial.
 - [ ] HDMI: the LTDC pixel clock is 74.25 MHz from PLL4 (owned by OP-TEE).
       Check that Linux can get that rate, or tune `pll4` in
       `board/dts/optee/` so that LTDC_PX can reach it.
