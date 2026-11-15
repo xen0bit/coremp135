@@ -15,6 +15,19 @@ mkdir -p "$SRC" "$OUT" "$DEBS"
 
 log() { printf '\033[1;34m==> %s\033[0m\n' "$*"; }
 
+# with_mirrors <cmd...>: run a git command with kernel.org URLs redirected to
+# GitHub mirrors. Used as a retry when git.kernel.org is unreachable (it has
+# been from GitHub's runners at times).
+with_mirrors() {
+	log "retrying via GitHub mirrors: $*"
+	GIT_CONFIG_COUNT=2 \
+	GIT_CONFIG_KEY_0=url.https://github.com/gregkh/linux.git.insteadOf \
+	GIT_CONFIG_VALUE_0=https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git \
+	GIT_CONFIG_KEY_1=url.https://github.com/dgibson/dtc.git.insteadOf \
+	GIT_CONFIG_VALUE_1=https://git.kernel.org/pub/scm/utils/dtc/dtc.git \
+	"$@"
+}
+
 # fetch_src <name> <repo> <ref>: shallow clone at ref into $SRC/<name>, apply
 # board/patches/<name>/*.patch on a pristine tree (re-run safe).
 fetch_src() {
@@ -22,10 +35,12 @@ fetch_src() {
 	if [ ! -d "$dir/.git" ] || [ "$(git -C "$dir" describe --tags --exact-match 2>/dev/null)" != "$ref" ]; then
 		rm -rf "$dir"
 		log "cloning $name @ $ref"
-		git clone --depth 1 --branch "$ref" "$repo" "$dir"
+		git clone --depth 1 --branch "$ref" "$repo" "$dir" ||
+			{ rm -rf "$dir"; with_mirrors git clone --depth 1 --branch "$ref" "$repo" "$dir"; }
 	fi
 	if [ -f "$dir/.gitmodules" ]; then
-		git -C "$dir" submodule update --init --depth 1 --recursive
+		git -C "$dir" submodule update --init --depth 1 --recursive ||
+			with_mirrors git -C "$dir" submodule update --init --depth 1 --recursive
 	fi
 	git -C "$dir" reset -q --hard
 	git -C "$dir" submodule foreach -q --recursive 'git reset -q --hard' 2>/dev/null || true
