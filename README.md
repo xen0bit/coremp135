@@ -100,7 +100,7 @@ CP210x, CH34x, PL2303, CDC-ACM) and common USB WiFi/Bluetooth dongles
 |---|---|---|
 | 2x Gigabit Ethernet (RTL8211F) | `dwmac-stm32` | mainline |
 | microSD | `mmci` (STM32 SDMMC) | mainline |
-| 2" 320x240 LCD (ILI9342C, SPI) | `panel-mipi-dbi` + init file | mainline driver |
+| 2" 320x240 LCD (ILI9342C, SPI) | `panel-mipi-dbi` + init file | mainline driver, text console (`fbcon=map:1`) |
 | LCD backlight (AXP2101 DLDO1) | `axp2101_m5stack_bl` | board patch |
 | Power off (AXP2101) | `axp2101-poweroff` | board patch |
 | Touch (FT6336U) | `edt-ft5x06` | mainline |

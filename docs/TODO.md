@@ -7,8 +7,10 @@ First board test (2026-11-14, CI image from `main`):
       SSH keys; `apt update`/`install` from Debian and the Pages repo.
 - [x] USB-C gadget serial console (`/dev/ttyACM*` on the host).
 - [x] RTC (`rtc0`, BM8563) sets the clock at boot and is kept in sync by NTP.
-- [x] LCD framebuffer + backlight device, touch input device, both ALSA cards,
-      HDMI blob service runs, USB hub enumerates.
+- [x] LCD (`panel-mipi-dbi`, 40 MHz SPI) shows the text console the right way
+      up (`fbcon=map:1`). Backlight dims; the speaker plays a test tone.
+- [x] Touch input device, both ALSA cards, HDMI blob service runs, USB hub
+      enumerates.
 - [x] Ethernet `end1` (ETH2, 5800e000) links at 1 Gbit/s with DHCP.
 - [ ] **Ethernet `end0` (ETH1, 5800a000) doesn't come up**: every open fails with
       `Failed to reset the dma`, with or without a cable. The DWMAC DMA
@@ -26,9 +28,6 @@ First board test (2026-11-14, CI image from `main`):
 - [ ] TF-A/OP-TEE/U-Boot console on PORT.C (needs a USB-UART).
 - [ ] Console pin swap: Linux uses `rx-tx-swap` on USART6 (copied from
       M5Stack), the bootloaders don't. Decide whether to keep it.
-- [ ] LCD: `panel-mipi-dbi` + `/lib/firmware/m5stack,coremp135-panel.bin`.
-      Check the orientation (MADCTL in `board/panel/*.txt`), colours (BGR,
-      inversion) and the 40 MHz SPI clock.
 - [ ] Touch axes vs. LCD orientation (`touchscreen-*` properties).
 - [ ] Backlight: changing `/sys/class/backlight/*/brightness` (0–100) dims the panel.
 - [ ] OTP has no MAC addresses programmed; the kernel assigns random ones and

@@ -2,7 +2,9 @@
 # Run `update-extlinux` (or reinstall a kernel) after editing.
 
 # Kernel command line (root is found by GPT partition label).
-CMDLINE="root=PARTLABEL=rootfs rootfstype=ext4 rootwait rw console=ttySTM0,115200 console=tty1 panic=10"
+# fbcon=map:1 puts the text console on the built-in LCD (fb1); use map:0 for
+# HDMI (fb0), or remove it to leave both to applications.
+CMDLINE="root=PARTLABEL=rootfs rootfstype=ext4 rootwait rw console=ttySTM0,115200 console=tty1 fbcon=map:1 panic=10"
 
 # Device tree overlays to apply, space separated, without .dtbo
 # Available: coremp135-mbus-uart2 coremp135-mbus-spidev coremp135-usb-c-host
