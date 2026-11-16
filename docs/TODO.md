@@ -40,10 +40,11 @@ First board test (2026-11-14, CI image from `main`):
 - [ ] TF-A/OP-TEE/U-Boot console on PORT.C (needs a USB-UART).
 - [ ] Console pin swap: Linux uses `rx-tx-swap` on USART6 (copied from
       M5Stack), the bootloaders don't. Decide whether to keep it.
-- [ ] OTP has no MAC addresses programmed; the kernel assigns random ones and
-      udev's `MACAddressPolicy=persistent` keeps them stable (derived from
-      `/etc/machine-id`, so they change on reflash). Consider deriving them
-      from the SoC UID in U-Boot instead.
+- [x] OTP has no MAC addresses programmed. U-Boot (board patch) derives
+      stable, locally administered ones from the SoC serial number and passes
+      them to Linux, so they survive reflashing. Needs the boot firmware from
+      `coremp135-firmware` (`sudo coremp135-flash-bootloader`); until then
+      Linux keeps using random, machine-id-based addresses.
 - [ ] CAN: `ip link set can0 up type can bitrate 500000`; can0 <-> can1 loopback.
 - [ ] RS485 on `/dev/ttySTM3` (hardware DE on PD12).
 - [x] HDMI pipeline with the new boot firmware: PLL4Q and the LTDC pixel clock

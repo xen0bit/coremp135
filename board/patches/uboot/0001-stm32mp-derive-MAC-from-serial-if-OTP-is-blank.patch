@@ -1,0 +1,72 @@
+From: CoreMP135 Debian build
+Subject: [PATCH] stm32mp: derive the MAC address from the serial number if OTP is blank
+
+Boards without MAC addresses in OTP (the M5Stack CoreMP135 ships with them
+all zero) got "invalid MAC address 0 in OTP" and no ethaddr, so Linux used
+random addresses. Derive a stable, locally administered address per port
+from the SoC's unique serial number instead: SHA-256(serial OTP words,
+port index), unicast, locally administered. fdt_fixup_ethernet() passes it
+to Linux as mac-address/local-mac-address.
+---
+diff --git a/arch/arm/mach-stm32mp/soc.c b/arch/arm/mach-stm32mp/soc.c
+index 67be55e3..a780b9c1 100644
+--- a/arch/arm/mach-stm32mp/soc.c
++++ b/arch/arm/mach-stm32mp/soc.c
+@@ -7,6 +7,7 @@
+ #include <misc.h>
+ #include <net.h>
+ #include <asm/arch/sys_proto.h>
++#include <u-boot/sha256.h>
+ #include <dm/device.h>
+ #include <dm/uclass.h>
+ 
+@@ -51,9 +52,33 @@ int setup_serial_number(void)
+ 	return 0;
+ }
+ 
++/*
++ * Boards whose OTP has no MAC address programmed (all zero), such as the
++ * M5Stack CoreMP135, get a stable, locally administered address derived
++ * from the SoC's unique serial number: SHA-256(serial OTP words, index).
++ */
++static int stm32mp_mac_from_serial(struct udevice *bsec, int index,
++				   uchar *enetaddr)
++{
++	u8 buf[3 * sizeof(u32) + 1];
++	u8 hash[SHA256_SUM_LEN];
++	int ret;
++
++	ret = misc_read(bsec, STM32_BSEC_SHADOW(BSEC_OTP_SERIAL), buf,
++			3 * sizeof(u32));
++	if (ret < 0)
++		return ret;
++	buf[3 * sizeof(u32)] = index;
++	sha256_csum_wd(buf, sizeof(buf), hash, CHUNKSZ_SHA256);
++	memcpy(enetaddr, hash, ARP_HLEN);
++	enetaddr[0] = (enetaddr[0] & 0xfe) | 0x02; /* unicast, local */
++	return 0;
++}
++
+ /*
+  * If there is no MAC address in the environment, then it will be initialized
+- * (silently) from the value in the OTP.
++ * (silently) from the value in the OTP, or derived from the serial number if
++ * the OTP is blank.
+  */
+ __weak int setup_mac_address(void)
+ {
+@@ -100,6 +125,14 @@ __weak int setup_mac_address(void)
+ 		if (is_broadcast_ethaddr(enetaddr))
+ 			continue;
+ 
++		if (is_zero_ethaddr(enetaddr)) {
++			ret = stm32mp_mac_from_serial(dev, index, enetaddr);
++			if (ret)
++				return ret;
++			log_info("MAC address %d from serial number: %pM\n",
++				 index, enetaddr);
++		}
++
+ 		if (!is_valid_ethaddr(enetaddr)) {
+ 			log_err("invalid MAC address %d in OTP %pM\n",
+ 				index, enetaddr);
