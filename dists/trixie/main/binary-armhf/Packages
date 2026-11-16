@@ -18,22 +18,24 @@ Description: Boot firmware for the M5Stack CoreMP135 (TF-A, OP-TEE, U-Boot)
  Built from TF-A lts-v2.14.14, OP-TEE 4.11.0, U-Boot v2026.10.
 
 Package: coremp135-support
-Version: 1.3-1
+Version: 1.4-1
 Architecture: all
 Maintainer: coremp135 build <noreply@example.invalid>
-Depends: linux-image-coremp135, cloud-guest-utils, e2fsprogs, gdisk
+Depends: linux-image-coremp135, cloud-guest-utils, e2fsprogs, gdisk, libpam-systemd
+Suggests: cage, foot
 Conflicts: coremp135-hdmi-blob
 Priority: optional
 Section: admin
-Filename: pool/main/c/coremp135-support/coremp135-support_1.3-1_all.deb
-Size: 4120
-SHA256: d5fc444a03ab032ee66eb8af3c5855fa8827140ce38f04fdc80821e11d1e3f41
-SHA1: e4c9fb920bc81e2b8a93c86d8d46e253c3fae2d7
-MD5sum: 15a80218e1a7c7e2086bbbee1d5ef253
+Filename: pool/main/c/coremp135-support/coremp135-support_1.4-1_all.deb
+Size: 4924
+SHA256: 13db24eca92ad1a04372b22d6abadff4042e59d6254836b0d88abea018bc433c
+SHA1: fe12d36a35537f787d02f521cec1e5bc07794cb5
+MD5sum: c7f9d46e9597fc179dcff84d06ef3344
 Description: Board support for the M5Stack CoreMP135
  extlinux.conf generation on kernel install/removal (U-Boot boot menu),
  LCD panel init firmware, first-boot root filesystem growth, USB gadget
- serial console and the project apt repository configuration.
+ serial console, an optional LCD kiosk service (cage) and the project apt
+ repository configuration.
 
 Package: linux-headers-6.18.63-coremp135
 Source: linux-coremp135
