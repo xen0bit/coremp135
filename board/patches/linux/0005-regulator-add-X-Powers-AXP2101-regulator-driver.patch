@@ -1,0 +1,210 @@
+From: CoreMP135 Debian build
+Subject: [PATCH] regulator: add X-Powers AXP2101 regulator driver
+
+DCDC1-5, ALDO1-4, BLDO1-2, CPUSLDO and DLDO1-2 of the AXP2101, as a child
+of its simple-mfd-i2c device (sharing the parent's regmap). Regulators
+without a DT node get no constraints and are left untouched.
+---
+diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
+index d84f3d054..6cad6bef1 100644
+--- a/drivers/regulator/Kconfig
++++ b/drivers/regulator/Kconfig
+@@ -213,6 +213,13 @@ config REGULATOR_AW37503
+ 	  This driver supports AW37503 single inductor - dual output
+ 	  power supply specifically designed for display panels.
+ 
++config REGULATOR_AXP2101
++	tristate "X-Powers AXP2101 PMIC regulators"
++	depends on MFD_SIMPLE_MFD_I2C
++	help
++	  Regulators of the X-Powers AXP2101 PMIC (DCDC1-5, ALDO1-4, BLDO1-2,
++	  CPUSLDO, DLDO1-2), as a child of its simple-mfd-i2c device.
++
+ config REGULATOR_AXP20X
+ 	tristate "X-POWERS AXP20X PMIC Regulators"
+ 	depends on MFD_AXP20X
+diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
+index b31013760..a80f1e201 100644
+--- a/drivers/regulator/Makefile
++++ b/drivers/regulator/Makefile
+@@ -32,6 +32,7 @@ obj-$(CONFIG_REGULATOR_AS3722) += as3722-regulator.o
+ obj-$(CONFIG_REGULATOR_ATC260X) += atc260x-regulator.o
+ obj-$(CONFIG_REGULATOR_AW37503) += aw37503-regulator.o
+ obj-$(CONFIG_REGULATOR_AXP20X) += axp20x-regulator.o
++obj-$(CONFIG_REGULATOR_AXP2101) += axp2101-regulator.o
+ obj-$(CONFIG_REGULATOR_BCM590XX) += bcm590xx-regulator.o
+ obj-$(CONFIG_REGULATOR_BD71815)	+= bd71815-regulator.o
+ obj-$(CONFIG_REGULATOR_BD71828) += bd71828-regulator.o
+diff --git a/drivers/regulator/axp2101-regulator.c b/drivers/regulator/axp2101-regulator.c
+new file mode 100644
+index 000000000..9b1a18650
+--- /dev/null
++++ b/drivers/regulator/axp2101-regulator.c
+@@ -0,0 +1,167 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * X-Powers AXP2101 PMIC regulators.
++ *
++ * A child of the "x-powers,axp2101" simple-mfd-i2c device, using its regmap.
++ * Voltage tables per the AXP2101 datasheet (as also used by XPowersLib):
++ *   DCDC1      1.5-3.4 V / 100 mV           reg 0x82
++ *   DCDC2      0.5-1.2 V / 10 mV, 1.22-1.54 V / 20 mV   0x83
++ *   DCDC3      as DCDC2, plus 1.6-3.4 V / 100 mV        0x84
++ *   DCDC4      0.5-1.2 V / 10 mV, 1.22-1.84 V / 20 mV   0x85
++ *   DCDC5      1.4-3.7 V / 100 mV           0x86
++ *   ALDO1-4, BLDO1-2, DLDO1   0.5-3.5 V / 100 mV   0x92-0x97, 0x99
++ *   CPUSLDO, DLDO2            0.5-1.4 V / 50 mV    0x98, 0x9a
++ * Enables: DCDCx in 0x80 bits 0-4; ALDO1-4, BLDO1-2, CPUSLDO, DLDO1 in 0x90
++ * bits 0-7; DLDO2 in 0x91 bit 0.
++ *
++ * Only regulators with a DT node get constraints; the others are registered
++ * read-only and never touched.
++ */
++
++#include <linux/mod_devicetable.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/regmap.h>
++#include <linux/regulator/driver.h>
++
++#define AXP2101_DCDC_EN		0x80
++#define AXP2101_DCDC1_V		0x82
++#define AXP2101_LDO_EN0		0x90
++#define AXP2101_LDO_EN1		0x91
++#define AXP2101_ALDO1_V		0x92
++
++enum {
++	AXP2101_DCDC1, AXP2101_DCDC2, AXP2101_DCDC3, AXP2101_DCDC4, AXP2101_DCDC5,
++	AXP2101_ALDO1, AXP2101_ALDO2, AXP2101_ALDO3, AXP2101_ALDO4,
++	AXP2101_BLDO1, AXP2101_BLDO2, AXP2101_CPUSLDO, AXP2101_DLDO1,
++	AXP2101_DLDO2, AXP2101_NUM_REGULATORS,
++};
++
++static const struct linear_range axp2101_dcdc2_ranges[] = {
++	REGULATOR_LINEAR_RANGE(500000, 0, 70, 10000),
++	REGULATOR_LINEAR_RANGE(1220000, 71, 87, 20000),
++};
++
++static const struct linear_range axp2101_dcdc3_ranges[] = {
++	REGULATOR_LINEAR_RANGE(500000, 0, 70, 10000),
++	REGULATOR_LINEAR_RANGE(1220000, 71, 87, 20000),
++	REGULATOR_LINEAR_RANGE(1600000, 88, 106, 100000),
++};
++
++static const struct linear_range axp2101_dcdc4_ranges[] = {
++	REGULATOR_LINEAR_RANGE(500000, 0, 70, 10000),
++	REGULATOR_LINEAR_RANGE(1220000, 71, 102, 20000),
++};
++
++static const struct regulator_ops axp2101_linear_ops = {
++	.list_voltage = regulator_list_voltage_linear,
++	.map_voltage = regulator_map_voltage_linear,
++	.get_voltage_sel = regulator_get_voltage_sel_regmap,
++	.set_voltage_sel = regulator_set_voltage_sel_regmap,
++	.enable = regulator_enable_regmap,
++	.disable = regulator_disable_regmap,
++	.is_enabled = regulator_is_enabled_regmap,
++};
++
++static const struct regulator_ops axp2101_range_ops = {
++	.list_voltage = regulator_list_voltage_linear_range,
++	.map_voltage = regulator_map_voltage_linear_range,
++	.get_voltage_sel = regulator_get_voltage_sel_regmap,
++	.set_voltage_sel = regulator_set_voltage_sel_regmap,
++	.enable = regulator_enable_regmap,
++	.disable = regulator_disable_regmap,
++	.is_enabled = regulator_is_enabled_regmap,
++};
++
++#define AXP2101_LINEAR(_id, _name, _min, _step, _n, _vreg, _vmask, _ereg, _ebit) \
++	[AXP2101_##_id] = {						\
++		.name = _name,						\
++		.of_match = _name,					\
++		.id = AXP2101_##_id,					\
++		.type = REGULATOR_VOLTAGE,				\
++		.owner = THIS_MODULE,					\
++		.ops = &axp2101_linear_ops,				\
++		.min_uV = _min,						\
++		.uV_step = _step,					\
++		.n_voltages = _n,					\
++		.vsel_reg = _vreg,					\
++		.vsel_mask = _vmask,					\
++		.enable_reg = _ereg,					\
++		.enable_mask = BIT(_ebit),				\
++	}
++
++#define AXP2101_RANGE(_id, _name, _ranges, _n, _vreg, _ereg, _ebit)	\
++	[AXP2101_##_id] = {						\
++		.name = _name,						\
++		.of_match = _name,					\
++		.id = AXP2101_##_id,					\
++		.type = REGULATOR_VOLTAGE,				\
++		.owner = THIS_MODULE,					\
++		.ops = &axp2101_range_ops,				\
++		.linear_ranges = _ranges,				\
++		.n_linear_ranges = ARRAY_SIZE(_ranges),			\
++		.n_voltages = _n,					\
++		.vsel_reg = _vreg,					\
++		.vsel_mask = 0x7f,					\
++		.enable_reg = _ereg,					\
++		.enable_mask = BIT(_ebit),				\
++	}
++
++#define AXP2101_LDO(_id, _name, _min, _step, _n, _vreg, _ereg, _ebit)	\
++	AXP2101_LINEAR(_id, _name, _min, _step, _n, _vreg, 0x1f, _ereg, _ebit)
++
++static const struct regulator_desc axp2101_regulators[] = {
++	AXP2101_LINEAR(DCDC1, "dcdc1", 1500000, 100000, 20, 0x82, 0x1f, AXP2101_DCDC_EN, 0),
++	AXP2101_RANGE(DCDC2, "dcdc2", axp2101_dcdc2_ranges, 88, 0x83, AXP2101_DCDC_EN, 1),
++	AXP2101_RANGE(DCDC3, "dcdc3", axp2101_dcdc3_ranges, 107, 0x84, AXP2101_DCDC_EN, 2),
++	AXP2101_RANGE(DCDC4, "dcdc4", axp2101_dcdc4_ranges, 103, 0x85, AXP2101_DCDC_EN, 3),
++	AXP2101_LINEAR(DCDC5, "dcdc5", 1400000, 100000, 24, 0x86, 0x1f, AXP2101_DCDC_EN, 4),
++	AXP2101_LDO(ALDO1, "aldo1", 500000, 100000, 31, 0x92, AXP2101_LDO_EN0, 0),
++	AXP2101_LDO(ALDO2, "aldo2", 500000, 100000, 31, 0x93, AXP2101_LDO_EN0, 1),
++	AXP2101_LDO(ALDO3, "aldo3", 500000, 100000, 31, 0x94, AXP2101_LDO_EN0, 2),
++	AXP2101_LDO(ALDO4, "aldo4", 500000, 100000, 31, 0x95, AXP2101_LDO_EN0, 3),
++	AXP2101_LDO(BLDO1, "bldo1", 500000, 100000, 31, 0x96, AXP2101_LDO_EN0, 4),
++	AXP2101_LDO(BLDO2, "bldo2", 500000, 100000, 31, 0x97, AXP2101_LDO_EN0, 5),
++	AXP2101_LDO(CPUSLDO, "cpusldo", 500000, 50000, 19, 0x98, AXP2101_LDO_EN0, 6),
++	AXP2101_LDO(DLDO1, "dldo1", 500000, 100000, 31, 0x99, AXP2101_LDO_EN0, 7),
++	AXP2101_LDO(DLDO2, "dldo2", 500000, 50000, 19, 0x9a, AXP2101_LDO_EN1, 0),
++};
++
++static int axp2101_regulator_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct regulator_config config = { .dev = dev };
++	struct regulator_dev *rdev;
++	int i;
++
++	config.regmap = dev_get_regmap(dev->parent, NULL);
++	if (!config.regmap)
++		return dev_err_probe(dev, -ENODEV, "no regmap from the PMIC\n");
++
++	for (i = 0; i < ARRAY_SIZE(axp2101_regulators); i++) {
++		rdev = devm_regulator_register(dev, &axp2101_regulators[i], &config);
++		if (IS_ERR(rdev))
++			return dev_err_probe(dev, PTR_ERR(rdev), "failed to register %s\n",
++					     axp2101_regulators[i].name);
++	}
++	return 0;
++}
++
++static const struct of_device_id axp2101_regulator_of_match[] = {
++	{ .compatible = "x-powers,axp2101-regulator" },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, axp2101_regulator_of_match);
++
++static struct platform_driver axp2101_regulator_driver = {
++	.probe = axp2101_regulator_probe,
++	.driver = {
++		.name = "axp2101-regulator",
++		.of_match_table = axp2101_regulator_of_match,
++		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
++	},
++};
++module_platform_driver(axp2101_regulator_driver);
++
++MODULE_DESCRIPTION("X-Powers AXP2101 PMIC regulators");
++MODULE_LICENSE("GPL");

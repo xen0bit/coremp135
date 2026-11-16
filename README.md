@@ -102,6 +102,7 @@ CP210x, CH34x, PL2303, CDC-ACM) and common USB WiFi/Bluetooth dongles
 | 2" 320x240 LCD (ILI9342C, SPI) | `panel-mipi-dbi` + init file | mainline driver, text console (`fbcon=map:1`) or a [kiosk app](#gui-apps-on-the-lcd) |
 | LCD backlight (AXP2101 DLDO1) | `axp2101_m5stack_bl` | board patch |
 | Power off (AXP2101) | `axp2101-poweroff` | board patch |
+| PMIC rails (AXP2101) | `axp2101-regulator` | board patch, `/sys/class/regulator` |
 | Touch (FT6336U) | `edt-ft5x06` | mainline |
 | RTC (BM8563) | `rtc-pcf8563` | mainline, `rtc0` |
 | Speaker (NS4168 via SAI1A) | `stm32-sai` + `simple-audio-card` | mainline |
@@ -109,21 +110,45 @@ CP210x, CH34x, PL2303, CDC-ACM) and common USB WiFi/Bluetooth dongles
 | RS485 (USART3) | `stm32-usart` RS485 mode | mainline, `/dev/ttySTM3` |
 | USB-A x2 (GL852G hub) | EHCI/OHCI | mainline |
 | USB-C OTG | DWC2, peripheral by default | mainline, `usb-c-host` overlay |
-| HDMI (LT8618SXB) | `lontium-lt8618sxb` DRM bridge (our patch) | 1280x720, see below |
-| CPU DVFS | SCMI perf via OP-TEE | limited to 650 MHz (see TODO) |
+| HDMI (LT8618SXB) | `lontium-lt8618sxb` DRM bridge (our patch) | EDID + hotplug, 720p60/50, 1080p30/25/24; see below |
+| CPU frequency | SCMI perf via OP-TEE | 650 MHz (see below) |
+| Suspend | suspend-to-idle | `systemctl suspend`, a tap on the LCD wakes it (see below) |
 
 ### HDMI
 
-The LTDC sends 1280x720 RGB to the LT8618SXB bridge. Mainline has no driver
-for this bridge, so `board/patches/linux` adds a small DRM bridge driver
-(`lontium-lt8618sxb`) that replays the register sequence from M5Stack's
-MIT-licensed U-Boot driver when the display is enabled. The mode is fixed at
-720p60 (the bridge's DDC/EDID isn't used), with the 74.25 MHz pixel clock from
-PLL4Q. HDMI audio is 48 kHz I2S on the `CoreMP135-HDMI` ALSA card.
+The LTDC sends 24-bit RGB to the LT8618SXB bridge. Mainline has no driver for
+this bridge, so `board/patches/linux` adds a DRM bridge driver
+(`lontium-lt8618sxb`). It reads the monitor's EDID through the chip's DDC
+master, polls hotplug, and on each modeset programs the chip (M5Stack's
+MIT-licensed init sequence) with the right TX PLL band and AVI infoframe; DVI
+monitors get plain DVI.
+
+The LTDC pixel clock is fixed at 74.25 MHz (PLL4Q, shared with the SD card
+clock and owned by OP-TEE), and the MP13's LTDC pads stop at 90 MHz anyway.
+So the modes offered are the ones a monitor lists at 74.25 MHz: 1280x720 at
+60 and 50 Hz, and 1920x1080 at 30/25/24 Hz on TVs that accept those. If the
+monitor's preferred mode isn't possible (e.g. 1080p60), 720p60 is used. To pick
+another mode for the console, add e.g. `video=HDMI-A-1:1280x720@50` to `CMDLINE`
+in `/etc/default/coremp135`; `modetest -M stm -c` (package `libdrm-tests`)
+lists them. HDMI audio is 48 kHz I2S on the `CoreMP135-HDMI` ALSA card.
 
 The HDMI output is DRM card 0 (`/dev/fb0`), the LCD is card 1 (`/dev/fb1`). The
 text console is on the LCD (`fbcon=map:1` in `/etc/default/coremp135`); use
 `fbcon=map:0` for HDMI.
+
+### CPU frequency and power
+
+The AXP2101 PMIC's rails are in `/sys/class/regulator`. The CPU stays at
+650 MHz: ST's 900 MHz and 1 GHz operating points need 1.35 V on VDDCPU, but
+this board feeds VDDCPU and VDDCORE from the same rail (DCDC2), and VDDCORE
+must stay within about 1.21-1.29 V. The device tree locks that rail to this
+range.
+
+`systemctl suspend` puts the board into suspend-to-idle (devices off, CPU
+idle; screens go dark), and a tap on the LCD wakes it. Deeper suspend-to-RAM
+would need PSCI system suspend in OP-TEE, which upstream OP-TEE doesn't
+implement for the STM32MP1. The PMIC interrupt (and so the power button) and the
+RTC alarm aren't wired to the SoC, so they can't wake it.
 
 ### GUI apps on the LCD
 
