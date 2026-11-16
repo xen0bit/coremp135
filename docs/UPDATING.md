@@ -94,9 +94,12 @@ patches and DTs may need small adjustments.
 2. In **Settings → Pages**, set *Source* to **GitHub Actions**. CI keeps the
    repository state (reprepro database and pool) in the `gh-pages` branch and
    deploys it to Pages from the workflow.
-3. Push to `main`. CI builds everything, uploads the image as an artifact
-   and publishes the apt repository. Tag `vX.Y` to attach the image to a
-   GitHub release.
+3. Push to `main`. CI builds everything, publishes the apt repository and
+   creates a GitHub release `build-YYYYMMDD-<commit>` with the SD card image,
+   the boot firmware (`tf-a-*.stm32`, `fip.bin`) and `sha256sums`. The release
+   notes list the package versions and the commits since the previous release.
+   Only the newest 10 `build-*` releases are kept (`KEEP_BUILDS` in the
+   workflow). Tag `vX.Y` for a release that is never pruned.
 
 Without `APT_SIGNING_KEY`, CI still builds, but it skips publishing, so devices
 never see a repository whose key changes on every run.
