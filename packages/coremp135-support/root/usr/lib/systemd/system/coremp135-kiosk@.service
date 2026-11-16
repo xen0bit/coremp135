@@ -1,0 +1,36 @@
+# Runs one full-screen Wayland app on the LCD with the cage kiosk compositor,
+# in place of the text login on that VT. Off by default:
+#   sudo apt install cage foot
+#   sudo systemctl enable --now coremp135-kiosk@tty1
+# The app is KIOSK_APP in /etc/default/coremp135-kiosk.
+[Unit]
+Description=Kiosk app on the LCD (cage, %I)
+After=systemd-user-sessions.service dbus.socket systemd-logind.service getty@%i.service
+Wants=dbus.socket systemd-logind.service
+Conflicts=getty@%i.service
+ConditionPathExists=/usr/bin/cage
+
+[Service]
+User=coremp135
+PAMName=coremp135-kiosk
+TTYPath=/dev/%I
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
+StandardInput=tty-fail
+StandardOutput=journal
+StandardError=journal
+UtmpIdentifier=%I
+UtmpMode=user
+# The LCD only (HDMI is the other DRM device). There is no GPU, so render
+# in software.
+Environment=WLR_DRM_DEVICES=/dev/dri/by-path/platform-44004000.spi-cs-0-card
+Environment=WLR_RENDERER=pixman
+Environment=KIOSK_APP=foot
+EnvironmentFile=-/etc/default/coremp135-kiosk
+ExecStart=/bin/sh -c 'exec /usr/bin/cage -- $$KIOSK_APP'
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=graphical.target

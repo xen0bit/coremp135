@@ -1,0 +1,3 @@
+# App that coremp135-kiosk@tty1 runs full-screen on the LCD (as the coremp135
+# user). After changing it: sudo systemctl restart coremp135-kiosk@tty1
+KIOSK_APP=foot

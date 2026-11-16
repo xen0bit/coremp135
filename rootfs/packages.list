@@ -6,6 +6,9 @@ systemd-sysv
 systemd-timesyncd
 udev
 dbus
+# logind sessions for logins (SSH, console, the LCD kiosk); only a Recommends
+# of systemd, which the image skips
+libpam-systemd
 kmod
 sudo
 # not Essential in trixie: agetty needs /bin/login for the serial consoles
