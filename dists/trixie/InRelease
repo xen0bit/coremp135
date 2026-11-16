@@ -5,26 +5,26 @@ Origin: CoreMP135
 Label: CoreMP135
 Suite: trixie
 Codename: trixie
-Date: Mon, 16 Nov 2026 03:28:54 UTC
+Date: Mon, 16 Nov 2026 04:14:41 UTC
 Architectures: armhf
 Components: main
 Description: Debian packages for the M5Stack CoreMP135
 MD5Sum:
- 854e3c9a0abf20a5f30a94630b19c07c 4270 main/binary-armhf/Packages
- 8a6827c0e963a61ae0140bf7e6893d22 1694 main/binary-armhf/Packages.gz
+ 440f78564d00abd41431722584fe7c03 4270 main/binary-armhf/Packages
+ 7f81877b1e7761da4af6b17e6e5156cf 1684 main/binary-armhf/Packages.gz
  3ae199ca0341dbab0403611596255f91 142 main/binary-armhf/Release
 SHA1:
- 06eadb29d9cb4bc272b66529487a6e631ef99a4d 4270 main/binary-armhf/Packages
- f20d54a897d2ebfcfd87abe2414afc5e47d0936c 1694 main/binary-armhf/Packages.gz
+ 5531ff814c938e0f4189ebc81c559d22abb09c29 4270 main/binary-armhf/Packages
+ 9f04cd84e4df22bdc10c7c65dbf192276ecbaaee 1684 main/binary-armhf/Packages.gz
  b2bd56bf8d994dfd79a76a42f50c7b7f43cd6935 142 main/binary-armhf/Release
 SHA256:
- e0b8a6cee8e8344f483d35f6a3c3e035c7090157c7f3f7aee1b5a54e045d2f66 4270 main/binary-armhf/Packages
- a79adfec539f44476c93f93f8189e0bf111f5d88f34c876ef7dd5f879a6375b1 1694 main/binary-armhf/Packages.gz
+ 1e0017014931e90b0bf1012eaaa482d7acecaab939a5cbecf5f5a463a9b29020 4270 main/binary-armhf/Packages
+ 89fb34f6c5415b072be96321f2b8cfacd753c234264df2a59ca4f2a0e55da809 1684 main/binary-armhf/Packages.gz
  4b553d12ceefa27b213a036e22deed2897dce7ccee40adfc45b5c3a120177e10 142 main/binary-armhf/Release
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQRaJw90AQJ7Wgir1FyXJC0OmNzvYAUCavp4dgAKCRCXJC0OmNzv
-YBWWAQCWaUbFeVtD3LSAh0ieYS5FvY1bNV3Pigy5/r9TlKoNyAD5AbPqq9shXFsZ
-JHQhYukAHsEIu13YSKaJEVjDdvBVhww=
-=My/R
+iHUEARYKAB0WIQRaJw90AQJ7Wgir1FyXJC0OmNzvYAUCavqDMQAKCRCXJC0OmNzv
+YPkXAQCULKJC12xO9g6vpWgtMH4VTHssfZAhxMxuJhUUv6bOnwEAruePGPZnO4C4
+YasCkBV1dCK0W4ARzsl9ly3m2MN9aAs=
+=IhA8
 -----END PGP SIGNATURE-----
