@@ -177,10 +177,15 @@
 		#size-cells = <0>;
 		compatible = "snps,dwmac-mdio";
 
-		ethphy1: ethernet-phy@0 {
-			/* RTL8211F; supplies the 125 MHz reference on ETH1_CLK125 */
+		/*
+		 * RTL8211F; supplies the 125 MHz reference on ETH1_CLK125. Both
+		 * PHYs are strapped to MDIO address 1 (schematic: "PHY Address =
+		 * 3'b001"). Address 0 also works only because RTL8211F answers
+		 * it as a broadcast address.
+		 */
+		ethphy1: ethernet-phy@1 {
 			compatible = "ethernet-phy-id001c.c916";
-			reg = <0>;
+			reg = <1>;
 			reset-gpios = <&gpioa 10 GPIO_ACTIVE_LOW>;
 			reset-assert-us = <10000>;
 			reset-deassert-us = <30000>;
@@ -204,9 +209,9 @@
 		#size-cells = <0>;
 		compatible = "snps,dwmac-mdio";
 
-		ethphy2: ethernet-phy@0 {
+		ethphy2: ethernet-phy@1 {
 			compatible = "ethernet-phy-id001c.c916";
-			reg = <0>;
+			reg = <1>;
 			reset-gpios = <&gpioa 14 GPIO_ACTIVE_LOW>;
 			reset-assert-us = <10000>;
 			reset-deassert-us = <30000>;

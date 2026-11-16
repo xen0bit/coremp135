@@ -14,19 +14,29 @@ First board test (2026-11-14, CI image from `main`):
 - [x] USB-A (GL852G hub): a USB 3.0 flash drive enumerates at high speed,
       `usb-storage` binds, ~35 MB/s sequential read.
 - [x] Ethernet `end1` (ETH2, 5800e000) links at 1 Gbit/s with DHCP.
-- [ ] **Ethernet `end0` (ETH1, 5800a000) doesn't come up**: every open fails with
-      `Failed to reset the dma`, with or without a cable. The DWMAC DMA
-      software reset needs RX_CLK and the 125 MHz clock on ETH1_CLK125 (PF12)
-      from the PHY, so one of them is missing. The same open works on `end1`
-      without a cable. Already ruled out:
-      - pinmux (identical to M5Stack's DT and to mainline `eth1_rgmii_pins_a`);
-      - SYSCFG mode (PMCSETR `0x20200000`: both RGMII with an external clock);
-      - RCC clocks (identical for both MACs);
-      - PHY ALDPS (off);
-      - a longer PHY reset delay (200 ms).
-      Next steps: check on the stock M5Stack image whether this port works at
-      all, then read PHY1's PHYCR2 CLKOUT from U-Boot (`mdio read`) or check
-      the schematic for how ETH1_CLK125 is wired.
+- [ ] **Ethernet `end0` (ETH1, 5800a000): PHY1 is held in reset on the test
+      board (likely a hardware fault).** Every open fails with
+      `Failed to reset the dma`: the DWMAC DMA reset needs the 125 MHz clock
+      from the PHY (ETH1_CLK125, PF12), and PHY1 never runs.
+      - Nothing answers on end0's MDIO bus at any address, even with
+        `reset-gpios` removed. The `RTL8211F` driver binding is not evidence
+        of a PHY: with `ethernet-phy-id001c.c916` the kernel doesn't read the ID.
+      - PHY1's reset ETH1_RSTN (PA10) won't go high. With a GPIO hog driving
+        it high, GPIOA is push-pull output with ODR=1 but IDR=0. PA14
+        (ETH2_RSTN) in the same state reads 1. PA10 isn't secured by OP-TEE
+        (SECCFGR=0) and nothing else claims it.
+      - The schematic (Sch_M5_CoreMP135_2024-04-24, p. 9, 11) matches our DT
+        for every ETH1 pin. Each PHY has its own 25 MHz crystal and filtered
+        VDD_3V3, and ETH1_RSTN only has R32 = 4.7k to GND (same as ETH2's
+        R33), which a push-pull output easily overrides.
+      - So the line is pulled low on the board: a solder bridge, the wrong
+        part at R32, or a damaged PA10/PHYRSTB pin. Check with the board
+        unpowered: R32 to GND should read about 4.7 kOhm, near 0 means a short.
+        Booting M5Stack's stock image should show the same failure.
+      - Not the cause: pinmux, SYSCFG PMCSETR (`0x20200000`, both RGMII with
+        the PHY clock), RCC clocks, PHY ALDPS, longer reset delays, or a
+        missing PMIC rail (ALDO3/4 and BLDO2 are off, but M5Stack's software
+        never enables them and the PHYs run from VDD_3V3).
 - [ ] TF-A/OP-TEE/U-Boot console on PORT.C (needs a USB-UART).
 - [ ] Console pin swap: Linux uses `rx-tx-swap` on USART6 (copied from
       M5Stack), the bootloaders don't. Decide whether to keep it.
