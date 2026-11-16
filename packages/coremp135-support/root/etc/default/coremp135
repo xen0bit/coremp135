@@ -4,7 +4,9 @@
 # Kernel command line (root is found by GPT partition label).
 # fbcon=map:1 puts the text console on the built-in LCD (fb1); use map:0 for
 # HDMI (fb0), or remove it to leave both to applications.
-CMDLINE="root=PARTLABEL=rootfs rootfstype=ext4 rootwait rw console=ttySTM0,115200 console=tty1 fbcon=map:1 panic=10"
+# quiet: only warnings reach the serial console and the LCD during boot (the
+# full log is in dmesg/journalctl); printing it all costs seconds at 650 MHz.
+CMDLINE="root=PARTLABEL=rootfs rootfstype=ext4 rootwait rw console=ttySTM0,115200 console=tty1 fbcon=map:1 quiet panic=10"
 
 # Device tree overlays to apply, space separated, without .dtbo
 # Available: coremp135-mbus-uart2 coremp135-mbus-spidev coremp135-usb-c-host
@@ -12,3 +14,7 @@ OVERLAYS=""
 
 # Number of kernels to keep in the boot menu (newest first; the 2nd is the fallback)
 MAX_KERNELS=3
+
+# How long U-Boot shows the boot menu on the serial console, in tenths of a
+# second. With a single kernel (or 0 here) there is no menu and no wait.
+MENU_TIMEOUT=10

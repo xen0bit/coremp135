@@ -15,7 +15,10 @@ This updates:
   copies the DTB and overlays to `/boot/dtbs/<version>/` and rewrites
   `/boot/extlinux/extlinux.conf` with the newest kernel as the default and
   older ones (up to `MAX_KERNELS`) as fallback entries in U-Boot's menu.
-  Pick a fallback on the serial console during the 2-second boot menu.
+  With a fallback installed, U-Boot shows that menu on the serial console for
+  `MENU_TIMEOUT` (default 1 s, in `/etc/default/coremp135`); with a single
+  kernel it boots straight away. Hold a key at power-on to stop at the U-Boot
+  prompt instead.
 - **Board support** (`coremp135-support`): the extlinux hook, LCD init file and first-boot service.
 - **Boot firmware** (`coremp135-firmware`): the TF-A/OP-TEE/U-Boot files are
   installed to `/usr/lib/coremp135/firmware`, but **not flashed**. Write them
