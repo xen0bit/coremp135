@@ -54,13 +54,27 @@ First board test (2026-11-14, CI image from `main`):
       pattern on `/dev/fb0` shows the right colours in order with all four
       edges visible; a 48 kHz stereo tone on the `CoreMP135-HDMI` card plays
       on both channels. (Needs the PLL4 firmware: `sudo coremp135-flash-bootloader`.)
-- [ ] HDMI modes other than 720p: read EDID through the LT8618SXB's DDC
-      master, and program the chip for the chosen mode.
+- [x] HDMI modes from EDID (2026-11-16): the bridge reads EDID (256 bytes)
+      and HPD; with a monitor whose preferred mode is 1080p60 it offers
+      720p60 (used) and 720p50, and `modetest` switches to 720p50 with the
+      right AVI VIC (19). Other clocks need a different PLL4 plan; 1080p60 is
+      over the LTDC's 90 MHz pad limit.
+- [x] Suspend-to-idle (2026-11-16): `systemctl suspend`, screens off, a tap
+      on the LCD wakes it; display, Ethernet and the kiosk come back. The
+      wake tap itself is lost (edt-ft5x06 reads it before I2C resumes, one
+      "Transfer while suspended" warning).
+- [ ] RTC timed power-on: the BM8563 INT drives the AXP2101 IRQ pin, but an
+      alarm doesn't power the board on after `poweroff` (tested). The
+      AXP2101's sleep mode with IRQ-pin wakeup might; needs the datasheet.
 
 ## Planned
-- [ ] **AXP2101 regulator driver** (upstreamable) instead of the backlight
-      shim. This would allow OPPs above 650 MHz (900 MHz/1 GHz need
-      VDDCPU = 1.35 V) and suspend support.
+- [x] **AXP2101 regulator driver** (`axp2101-regulator`, board patch 0005):
+      all rails in `/sys/class/regulator`, the used ones always-on with
+      their OTP voltages. Not possible on this board: CPU above 650 MHz
+      (VDDCPU and VDDCORE share DCDC2; 1.35 V for overdrive is out of
+      VDDCORE's range).
+- [ ] Suspend-to-RAM: needs PSCI SYSTEM_SUSPEND (STM32MP13 low-power modes)
+      in OP-TEE; upstream OP-TEE has none for stm32mp1, ST's fork does.
 - [ ] Upstream the board DTs, the AXP2101 support and the LT8618SXB driver
       (Linux, U-Boot, TF-A, OP-TEE).
 - [ ] Optional: A/B rootfs or RAUC for unattended updates.

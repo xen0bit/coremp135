@@ -71,41 +71,6 @@
 		regulator-boot-on;
 	};
 
-	/*
-	 * HDMI: LTDC parallel RGB -> Lontium LT8618SXB (hdmi-bridge@39 on
-	 * i2c3) -> this fixed 720p mode. The bridge's DDC/EDID is not used.
-	 * The 74.25 MHz pixel clock is PLL4Q (board/dts/optee).
-	 */
-	panel-hdmi {
-		compatible = "panel-dpi";
-		power-supply = <&v3v3>;
-		data-mapping = "rgb24";
-		width-mm = <320>;
-		height-mm = <180>;
-
-		panel-timing {
-			clock-frequency = <74250000>;
-			hactive = <1280>;
-			vactive = <720>;
-			hsync-len = <40>;
-			hfront-porch = <110>;
-			hback-porch = <220>;
-			vsync-len = <5>;
-			vfront-porch = <5>;
-			vback-porch = <20>;
-			hsync-active = <1>;
-			vsync-active = <1>;
-			de-active = <1>;
-			pixelclk-active = <1>;
-		};
-
-		port {
-			panel_in_hdmi: endpoint {
-				remote-endpoint = <&hdmi_bridge_out>;
-			};
-		};
-	};
-
 	/* NS4168 mono class-D amp on SAI1A (no control interface) */
 	sound-speaker {
 		compatible = "simple-audio-card";
@@ -272,6 +237,74 @@
 		poweroff {
 			compatible = "x-powers,axp2101-poweroff";
 		};
+
+		/*
+		 * Rails per the schematic (Sch_M5_CoreMP135, p. 4-5). Every rail
+		 * that is on is always-on so nothing gets switched off; ranges
+		 * include the OTP defaults so nothing is changed at boot either.
+		 * ALDO3/4, BLDO2, CPUSLDO, DLDO2 and DCDC5 are unused and DLDO1
+		 * belongs to the backlight driver: no nodes, never touched.
+		 */
+		regulators {
+			compatible = "x-powers,axp2101-regulator";
+
+			axp_dcdc1: dcdc1 {
+				regulator-name = "vdd_3v3";
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-always-on;
+			};
+
+			/*
+			 * VDDCPU and VDDCORE share this rail, so it must stay in
+			 * VDDCORE's range (1.21-1.29 V). That rules out the 1.35 V
+			 * CPU overdrive OPPs (900 MHz / 1 GHz): the CPU runs at
+			 * 650 MHz.
+			 */
+			axp_dcdc2: dcdc2 {
+				regulator-name = "vdd_cpu_core";
+				regulator-min-microvolt = <1210000>;
+				regulator-max-microvolt = <1290000>;
+				regulator-always-on;
+			};
+
+			axp_dcdc3: dcdc3 {
+				regulator-name = "vdd_1v8";
+				regulator-min-microvolt = <1800000>;
+				regulator-max-microvolt = <1800000>;
+				regulator-always-on;
+			};
+
+			axp_dcdc4: dcdc4 {
+				regulator-name = "vdd_ddr";
+				regulator-min-microvolt = <1340000>;
+				regulator-max-microvolt = <1380000>;
+				regulator-always-on;
+			};
+
+			axp_aldo1: aldo1 {
+				regulator-name = "vusb_hs_3v3";
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-always-on;
+			};
+
+			/* enable of the SY7088 5 V boost (USB host, M-Bus, HDMI) */
+			axp_aldo2: aldo2 {
+				regulator-name = "vcc_bst_5v_en";
+				regulator-min-microvolt = <3300000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-always-on;
+			};
+
+			/* 1.2 V for the RTL8188FTV USB WiFi footprint (p. 2) */
+			axp_bldo1: bldo1 {
+				regulator-name = "wifi_1v2";
+				regulator-min-microvolt = <1200000>;
+				regulator-max-microvolt = <1200000>;
+				regulator-always-on;
+			};
+		};
 	};
 
 	touchscreen@38 {
@@ -281,8 +314,16 @@
 		interrupts = <1 IRQ_TYPE_EDGE_FALLING>;
 		touchscreen-size-x = <320>;
 		touchscreen-size-y = <240>;
+		/* a tap wakes the board from suspend-to-idle */
+		wakeup-source;
 	};
 
+	/*
+	 * HDMI: LTDC parallel RGB (24-bit, separate syncs) -> LT8618SXB. The
+	 * bridge reads EDID and HPD itself and creates the HDMI connector.
+	 * Modes are limited to what the LTDC pixel clock (PLL4Q = 74.25 MHz,
+	 * board/dts/optee) can produce: 720p60/50, 1080p30/25/24.
+	 */
 	hdmi-bridge@39 {
 		compatible = "lontium,lt8618sxb";
 		reg = <0x39>;
@@ -297,16 +338,14 @@
 					remote-endpoint = <&ltdc_out_rgb>;
 				};
 			};
-
-			port@1 {
-				reg = <1>;
-				hdmi_bridge_out: endpoint {
-					remote-endpoint = <&panel_in_hdmi>;
-				};
-			};
 		};
 	};
 
+	/*
+	 * INT drives the AXP2101's IRQ pin (AXP_WAKEUP), not the SoC, so Linux
+	 * gets no alarm interrupt; and the alarm doesn't power the board on
+	 * after poweroff either (tested). So no alarm/wakeup-source here.
+	 */
 	bm8563: rtc@51 {
 		compatible = "nxp,pcf8563";
 		reg = <0x51>;
