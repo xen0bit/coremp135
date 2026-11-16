@@ -2,8 +2,13 @@
 
 ## Write the image
 
+Download the `.img.xz` from the newest
+[release](https://github.com/xen0bit/coremp135/releases/latest) (every merge to
+`main` makes one), check it against `sha256sums`, and write it:
+
 ```sh
-xzcat coremp135-debian-trixie-YYYYMMDD.img.xz | sudo dd of=/dev/sdX bs=4M conv=fsync status=progress
+sha256sum -c --ignore-missing sha256sums
+xzcat build-YYYYMMDD-<commit>-coremp135-debian-trixie.img.xz | sudo dd of=/dev/sdX bs=4M conv=fsync status=progress
 ```
 
 You can also use balenaEtcher or Raspberry Pi Imager ("use custom"), both of
@@ -29,8 +34,9 @@ The layout matches M5Stack's images, so their docs on boot pins and recovery sti
 
 ## Boot firmware recovery from a PC
 
-If a bootloader update fails, write a known-good firmware build (from a CI
-artifact or `build/out/firmware/`) back to the card:
+If a bootloader update fails, write a known-good firmware build (the
+`tf-a-stm32mp135f-coremp135.stm32` and `fip.bin` attached to every release, or
+`build/out/firmware/`) back to the card:
 
 ```sh
 sudo dd if=fip.bin of=/dev/disk/by-partlabel/fip conv=fsync

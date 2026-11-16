@@ -17,6 +17,10 @@ vendor binaries are used.
 
 ## Quick start
 
+Prebuilt images: every merge to `main` publishes one under
+[Releases](https://github.com/xen0bit/coremp135/releases/latest). To build
+your own:
+
 Requirements: Docker, about 10 GB of free disk space, and a network connection.
 
 ```sh
@@ -75,7 +79,7 @@ rootfs/overlay/, hooks/      static files and the mmdebstrap customize hook
 packages/                    sources of our .deb packages
 image/genimage.cfg.in        SD card partition layout
 scripts/                     build steps (all runnable on their own)
-.github/workflows/build.yml  CI: build, image artifact, apt repo on GitHub Pages
+.github/workflows/build.yml  CI: build, image release per merge, apt repo on GitHub Pages
 ```
 
 ## Keeping it up to date
