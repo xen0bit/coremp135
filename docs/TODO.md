@@ -40,8 +40,10 @@ First board test (2026-11-14, CI image from `main`):
       are 74.25 MHz, the LT8618SXB probes (chip ID 17 02 e2) and its TX PLL
       locks. SDMMC runs from PLL4P = 99 MHz (49.5 MHz bus clock): SD reads
       22.9 MB/s vs 23.2 MB/s before. The hardware RNG (PLL4R = 49.5 MHz) works.
-- [ ] HDMI picture and audio on a monitor. The PLL4 change only takes effect
-      after `sudo coremp135-flash-bootloader`.
+- [x] HDMI on a monitor (2026-11-15): 1280x720@60, an 8-bar RGB565 test
+      pattern on `/dev/fb0` shows the right colours in order with all four
+      edges visible; a 48 kHz stereo tone on the `CoreMP135-HDMI` card plays
+      on both channels. (Needs the PLL4 firmware: `sudo coremp135-flash-bootloader`.)
 - [ ] HDMI modes other than 720p: read EDID through the LT8618SXB's DDC
       master, and program the chip for the chosen mode.
 
